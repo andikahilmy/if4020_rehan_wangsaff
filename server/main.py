@@ -16,3 +16,8 @@ async def connect():
 # buat nerima pesan dari klien A dan ngirim ke klien B
 async def transfer():
   pass
+
+@app.get("/digital-signature-param")
+# buat dapatin global variabel digital signature
+async def digital_signature_param():
+  pass
