@@ -1,6 +1,6 @@
 import os
 import sqlite3
-
+import uuid
 
 class Database:
     DATABASE_PATH = "client/db/client.db"
@@ -10,13 +10,13 @@ class Database:
           self.init_table()
 
     def init_table(self):
-        self.db = sqlite3.connect(Database.DATABASE_PATH)
-        self.db.execute(
+        db = sqlite3.connect(Database.DATABASE_PATH)
+        db.execute(
             """create table user(
 id varchar(36) primary key not null,
 name text);"""
         )
-        self.db.execute(
+        db.execute(
             """CREATE TABLE chat(
   chat_id varchar(36) not null,
   user_id varchar(36) not null,
@@ -27,6 +27,21 @@ name text);"""
     );
 """
         )
-        self.db.close()
+        db.close()
+
+    def get_message(self,user_id:str):
+        db = sqlite3.connect(Database.DATABASE_PATH)
+        db.cursor().execute("SELECT * FROM chat WHERE user_id=?",(user_id))
+        output = db.cursor().fetchall()
+        db.commit()
+        db.close()
+        return output
+
+    def add_message(self,user_id:str,content:str):
+        db = sqlite3.connect(Database.DATABASE_PATH)
+        chat_id = uuid.uuid4()
+        db.cursor().execute("INSERT INTO chat VALUES(?,?,?)",(chat_id,user_id,content))
+        db.commit()
+        db.close()
 if __name__=="__main__":
     d = Database()
