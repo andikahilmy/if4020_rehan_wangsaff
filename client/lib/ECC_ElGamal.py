@@ -32,6 +32,7 @@ def encrypt(plaintext:bytes,public_key:Point):
   c2 = P_M + k * public_key
   return (c1,c2)
 
-def decrypt(ciphertext:bytes,private_key:int,c1:Point,c2:Point):
+def decrypt(c1:Point,c2:Point,private_key:int):
   curve = registry.get_curve('brainpoolP256r1')
-  return c2 - (curve.field.n -  private_key) * c1
+  P_M =  c2 - (curve.field.n -  private_key) * c1
+  return decode_bytes(P_M)
