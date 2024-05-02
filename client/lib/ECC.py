@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 from typing import Type
+from lib.utils import sqrt_mod
 
 # Kurva: # y^2 =  x^3 + ax + b  (mod p)
 
@@ -101,6 +102,13 @@ class ElipticCurve:
     # Mendapatkan titik Basis
     def get_basepoint(self):
         return Point(self.B_X, self.B_Y, self.curve)
+    
+    # mendapatkan nilai y
+    def y(self,x:int)->int:
+        # y^2 =  x^3 + ax + b  (mod p)
+        # y = sqrt(x^3 + ax + b  (mod p))
+        y_2 = (x**3  + self.a * x + self.b)  % self.p
+        return sqrt_mod(y_2)
 
 
 # Sumber: https://neuromancer.sk/std/secg/secp256r1#
