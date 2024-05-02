@@ -108,7 +108,7 @@ class ElipticCurve:
         # y^2 =  x^3 + ax + b  (mod p)
         # y = sqrt(x^3 + ax + b  (mod p))
         y_2 = (x**3  + self.a * x + self.b)  % self.p
-        return sqrt_mod(y_2)
+        return sqrt_mod(y_2,self.p)
 
 
 # Sumber: https://neuromancer.sk/std/secg/secp256r1#
