@@ -1,19 +1,18 @@
-from dataclasses import dataclass
 from typing import Type
 from lib.utils import sqrt_mod
-
+from dataclasses import dataclass
 # Kurva: # y^2 =  x^3 + ax + b  (mod p)
 
 
-@dataclass
 class Point:
-    x: int
-    y: int
-    curve: ElipticCurve
+    def __init__(self,x: int,y: int,curve)->None:
+        self.x = x
+        self.y = y
+        self.curve:ElipticCurve = curve
 
     # Perkalian skalar dengan titik
     def __mul__(self, scalar: int):
-        if self.__is_infinity():
+        if self.is_infinity():
             # k.O = O
             return self.curve.INFINITY
         elif scalar == 0:
@@ -33,16 +32,18 @@ class Point:
                 return -res
             else:
                 return res
-
+            
+    def __iadd__(self, point):
+        return self.__add__(point)
     # Penjumlahan titik pada kurva
     # m = ((yp-yq)/(xp-xq)) mod p
     # xr = (m^2 – xp – xq) mod p
     # yr = (m(xp – xr) – yp) mod p
-    def __add__(self, point: Point) -> Point:
-        if self.__is_infinity() and not point.__is_infinity():
+    def __add__(self, point):
+        if self.is_infinity() and not point.is_infinity():
             # O + P = P
             return Point(point.x, point.y, point.curve)
-        elif not self.__is_infinity() and point.__is_infinity():
+        elif not self.is_infinity() and point.is_infinity():
             # P + O = P
             return Point(self.x, self.y, self.curve)
         elif self.x == point.x:
@@ -53,6 +54,7 @@ class Point:
                 # 𝑚=𝑑𝑦/𝑑𝑥=(3𝑥_𝑝^2+𝑎)/(2𝑦_𝑝 )
                 d_y = 3 * (self.x**2) + self.curve.a
                 d_x = 2 * self.y
+                print(d_x)
                 m = d_y * pow(d_x, -1, self.curve.p)
                 x_r = m**2 - 2 * self.x
                 y_r = m * (self.x - x_r) - self.y
@@ -73,15 +75,21 @@ class Point:
             return Point(xr, yr, self.curve)
 
     # Karena P+Q == Q+P
-    def __radd__(self, point: Point) -> Point:
+    def __radd__(self, point):
         self.__add__(point)
 
-    def __is_infinity(self) -> bool:
+    def is_infinity(self) -> bool:
         return self.x == None and self.y == None
 
-    def __neg__(self) -> Point:
+    def __neg__(self):
         # -P
         return Point(self.x, -self.y, self.curve)
+    
+    def __repr__(self) -> str:
+        return self.__str__()
+    
+    def __str__(self) -> str:
+        return f"({self.x},{self.y})"
 
 
 # y^2 =  x^3 + ax + b  (mod p)
@@ -90,7 +98,7 @@ class ElipticCurve:
     a: int
     b: int
     p: int
-    n: int  # Jumlah titik
+    n: int # Jumlah titik
     B_X: int
     B_Y: int
 
@@ -99,9 +107,10 @@ class ElipticCurve:
     def INFINITY(self) -> Point:
         return Point(None, None, self)
 
+
     # Mendapatkan titik Basis
     def get_basepoint(self):
-        return Point(self.B_X, self.B_Y, self.curve)
+        return Point(self.B_X, self.B_Y, self)
     
     # mendapatkan nilai y
     def y(self,x:int)->int:
@@ -109,6 +118,12 @@ class ElipticCurve:
         # y = sqrt(x^3 + ax + b  (mod p))
         y_2 = (x**3  + self.a * x + self.b)  % self.p
         return sqrt_mod(y_2,self.p)
+    
+    def __repr__(self) -> str:
+        return self.__str__()
+    
+    def __str__(self) -> str:
+        return f"y^2 = x^3 + {self.a}x + {self.b} (mod {self.p})"
 
 
 # Sumber: https://neuromancer.sk/std/secg/secp256r1#
