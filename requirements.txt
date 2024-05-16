@@ -1,2 +1,4 @@
 uvicorn[standard]
 uuid
+pytest
+pytest-mock

@@ -3,3 +3,6 @@ run-server:
 
 run-client:
 	python client/main.py
+
+testing:
+	pytest test
