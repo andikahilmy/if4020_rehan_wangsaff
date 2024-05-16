@@ -1,5 +1,5 @@
 from typing import Type
-from lib.utils import sqrt_mod
+from client.lib.utils import sqrt_mod
 from dataclasses import dataclass
 # Kurva: # y^2 =  x^3 + ax + b  (mod p)
 
@@ -54,10 +54,9 @@ class Point:
                 # 𝑚=𝑑𝑦/𝑑𝑥=(3𝑥_𝑝^2+𝑎)/(2𝑦_𝑝 )
                 d_y = 3 * (self.x**2) + self.curve.a
                 d_x = 2 * self.y
-                print(d_x)
                 m = d_y * pow(d_x, -1, self.curve.p)
-                x_r = m**2 - 2 * self.x
-                y_r = m * (self.x - x_r) - self.y
+                x_r = (m**2 - 2 * self.x) % self.curve.p
+                y_r = (m * (self.x - x_r) - self.y) % self.curve.p
                 return Point(x_r, y_r, self.curve)
             elif self.y == point.y and self.y == 0:
                 # P + P = 2P = O
@@ -90,6 +89,9 @@ class Point:
     
     def __str__(self) -> str:
         return f"({self.x},{self.y})"
+    
+    def __eq__(self,other:Type['Point']):
+        return self.x == other.x and self.y == other.y and self.curve == other.curve
 
 
 # y^2 =  x^3 + ax + b  (mod p)

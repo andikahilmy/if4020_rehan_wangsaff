@@ -1,12 +1,12 @@
 import secrets
-from lib.ECC import  SECP256R1,Point
+from client.lib.ECC import  SECP256R1,Point
 def generate_keypair():
   private_key = generate_privatekey()
   public_key = generate_publickey(private_key)
   return (public_key,private_key)
 
 def generate_publickey(private_key:int)->Point:
-  return private_key * SECP256R1.get_basepoint()
+  return  SECP256R1.get_basepoint() * private_key
 
 def generate_privatekey()->int:
   private_key = secrets.randbelow(SECP256R1.n)
