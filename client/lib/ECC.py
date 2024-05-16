@@ -72,6 +72,8 @@ class Point:
             xr = (m**2 - self.x - point.x) % self.curve.p
             yr = (m * (self.x - point.x) - self.y) % self.curve.p
             return Point(xr, yr, self.curve)
+    def __sub__(self, point):
+        return self.__add__(-point)
 
     # Karena P+Q == Q+P
     def __radd__(self, point):
