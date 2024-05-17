@@ -66,11 +66,15 @@ class Point:
                 # return infinity
                 return self.curve.INFINITY
         else:
+            # 𝑚=(𝑦_𝑝−𝑦_𝑞)/(𝑥_𝑝−𝑥_𝑞 )
+            # xr = m2 – xp – xq
+            # yr = m(xp – xr) – yp  
+
             delta_y = self.y - point.y
             delta_x = self.x - point.x
             m = delta_y * pow(delta_x, -1, self.curve.p)
             xr = (m**2 - self.x - point.x) % self.curve.p
-            yr = (m * (self.x - point.x) - self.y) % self.curve.p
+            yr = (m * (self.x - xr) - self.y) % self.curve.p
             return Point(xr, yr, self.curve)
     def __sub__(self, point):
         return self.__add__(-point)

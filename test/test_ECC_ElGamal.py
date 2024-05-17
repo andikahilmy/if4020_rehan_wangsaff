@@ -18,16 +18,19 @@ def test_generate_keypair(mocker):
    public_key = generate_publickey(private_key)
    assert generate_keypair() == (public_key,private_key)
 
-def test_encode_point():
-   pass
+def test_encode_encode_point():
+   plaintext = b'Halo DUnya!'
+   plain_point = encode_point(plaintext)
+   assert type(plain_point)==Point
 
-def test_decode_point():
-   pass
+   replaintext = decode_point(plain_point)
+   assert type(replaintext)==bytes
+   assert replaintext==plaintext
 
 def test_encrypt(mocker):
    pub,priv = generate_keypair()
    curve = pub.curve
-   mocker.patch('client.lib.ECC_ElGamal.encode_point', return_value=Point(1000,1000,curve))
+   # mocker.patch('client.lib.ECC_ElGamal.encode_point', return_value=Point(1000,1000,curve))
    # Coba enkripsi
    public_key = generate_publickey(generate_privatekey())
    plaintext = b"hello"
@@ -37,13 +40,12 @@ def test_encrypt(mocker):
 
 def test_encrypt_decrypt(mocker):
    pub,priv = generate_keypair()
-   curve = pub.curve
-   mocker.patch('client.lib.ECC_ElGamal.encode_point', return_value=Point(1000,1000,curve))
-   mocker.patch('client.lib.ECC_ElGamal.decode_point', return_value=b"hello")
+   # mocker.patch('client.lib.ECC_ElGamal.encode_point', return_value=Point(1000,1000,curve))
+   # mocker.patch('client.lib.ECC_ElGamal.decode_point', return_value=b"hello")
    # Coba enkripsi
    # public_key = generate_publickey(generate_privatekey())
    plaintext = b"hello"
-   c1,c2 = encrypt(plaintext,pub)
+   c1,c2 = encrypt(plaintext,pub,priv)
    plain = decrypt(c1,c2,priv)
    assert type(plain)==bytes
    assert plain==plaintext
