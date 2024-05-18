@@ -31,8 +31,18 @@ class Client(tk.Tk):
         self.connect_label.grid(row=1, column=0,sticky='w')
         self.connect_entry = tk.Entry(self.connect_frame, font=("Arial", 12))
         self.connect_entry.grid(row=1, column=1)
+        # Tambahkan margin antara entry dan tombol
+        self.connect_frame.grid_rowconfigure(2, minsize=50)
         self.connect_button = tk.Button(
-            self.connect_frame, text="Hubungkan", font=("Arial", 12))
+            self.connect_frame, text="Hubungkan", font=("Arial", 12),bd=4)
         self.connect_button.grid(row=2, column=0, columnspan=2)
-
-
+        # Tombol untuk mengakses kunci pengguna
+        self.register_login_frame = tk.Frame(self, bd=2, relief=tk.GROOVE)
+        self.register_login_frame.pack(pady=10)
+        self.register_button = tk.Button(
+            self.register_login_frame, text="Daftar", font=("Arial", 12),bd=4)
+        self.register_button.grid(row=0, column=0)
+        self.register_login_frame.grid_columnconfigure(1, minsize=50)
+        self.login_button = tk.Button(
+            self.register_login_frame, text="Masuk", font=("Arial", 12),bd=4)
+        self.login_button.grid(row=0, column=1)

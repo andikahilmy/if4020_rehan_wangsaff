@@ -14,7 +14,10 @@ class Database:
         db.execute(
             """create table user(
 id varchar(36) primary key not null,
-name text);"""
+name text,
+password text,
+pubkey text,
+privatekey text);"""
         )
         db.execute(
             """CREATE TABLE chat(
