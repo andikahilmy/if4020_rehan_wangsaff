@@ -1,24 +1,27 @@
 import os
 import sqlite3
 import uuid
+import hashlib
 
 class Database:
     DATABASE_PATH = "client/db/client.db"
 
-    def __init__(self) -> None:
-        if(not os.path.exists(Database.DATABASE_PATH)):
-          self.init_table()
+    # def __init__(self) -> None:
+    #     if(not os.path.exists(Database.DATABASE_PATH)):
+    #       self.init_table()
 
-    def init_table(self):
-        db = sqlite3.connect(Database.DATABASE_PATH)
-        db.execute(
+    @staticmethod
+    def init_table():
+        if(not os.path.exists(Database.DATABASE_PATH)):
+            db = sqlite3.connect(Database.DATABASE_PATH)
+            db.execute(
             """create table user(
 id varchar(36) primary key not null,
 name text,
 password text,
 pubkey text);"""
         )
-        db.execute(
+            db.execute(
             """CREATE TABLE chat(
   chat_id varchar(36) not null,
   user_id varchar(36) not null,
@@ -29,9 +32,10 @@ pubkey text);"""
     );
 """
         )
-        db.close()
+            db.close()
 
-    def get_message(self,user_id:str):
+    @staticmethod
+    def get_message(user_id:str):
         db = sqlite3.connect(Database.DATABASE_PATH)
         db.cursor().execute("SELECT * FROM chat WHERE user_id=?",(user_id))
         output = db.cursor().fetchall()
@@ -39,7 +43,8 @@ pubkey text);"""
         db.close()
         return output
 
-    def add_message(self,user_id:str,content:str):
+    @staticmethod
+    def add_message(user_id:str,content:str):
         db = sqlite3.connect(Database.DATABASE_PATH)
         chat_id = uuid.uuid4()
         db.cursor().execute("INSERT INTO chat VALUES(?,?,?)",(str(chat_id),user_id,content))
@@ -50,7 +55,6 @@ pubkey text);"""
     def add_user(name:str,password:str):
         db = sqlite3.connect(Database.DATABASE_PATH)
         user_id = uuid.uuid4()
-        print(str(user_id))
         db.cursor().execute("INSERT INTO user VALUES(?,?,?,?)",(str(user_id),name,password,""))
         db.commit()
         db.close()
@@ -60,5 +64,15 @@ pubkey text);"""
         db.cursor().execute("UPDATE user SET pubkey=? WHERE id=?",(pubkey,user_id))
         db.commit()
         db.close()
+
+    @staticmethod
+    def search_user_by_credential(name:str,password:str):
+        db = sqlite3.connect(Database.DATABASE_PATH)
+        cursor = db.cursor()
+        cursor.execute("SELECT * FROM user WHERE name=? AND password=?",(name,hashlib.sha256(password.encode()).hexdigest()))
+        output = cursor.fetchone()
+        db.commit()
+        db.close()
+        return output
 if __name__=="__main__":
     d = Database()

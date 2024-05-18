@@ -1,5 +1,5 @@
 import secrets
-from client.lib.ECC import  SECP256R1,Point,ElipticCurve
+from lib.ECC import  SECP256R1,Point,ElipticCurve
 import math
 def generate_keypair():
   private_key = generate_privatekey()

@@ -1,5 +1,5 @@
 from typing import Type
-from client.lib.utils import sqrt_mod
+from lib.utils import sqrt_mod
 from dataclasses import dataclass
 # Kurva: # y^2 =  x^3 + ax + b  (mod p)
 
