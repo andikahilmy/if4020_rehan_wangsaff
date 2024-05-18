@@ -1,5 +1,30 @@
 import tkinter as tk
+from tkinter import simpledialog
+from lib.Database import Database
+import hashlib
 
+class RegisterDialog(simpledialog.Dialog):
+    def body(self, master):
+        self.title("Pendaftaran Akun")
+
+        tk.Label(master, text="Nama Pengguna:").grid(row=0, column=0, padx=10, pady=5)
+        self.entry_username = tk.Entry(master)
+        self.entry_username.grid(row=0, column=1, padx=10, pady=5)
+
+        tk.Label(master, text="Kata Sandi:").grid(row=1, column=0, padx=10, pady=5)
+        self.entry_password = tk.Entry(master, show='*')
+        self.entry_password.grid(row=1, column=1, padx=10, pady=5)
+
+        tk.Label(master, text="Konfirmasi Kata Sandi:").grid(row=2, column=0, padx=10, pady=5)
+        self.entry_confirm_password = tk.Entry(master, show='*')
+        self.entry_confirm_password.grid(row=2, column=1, padx=10, pady=5)
+        # Fokuskan input pertama ke username
+        return self.entry_username 
+
+    def apply(self):
+        self.username = self.entry_username.get()
+        self.password = self.entry_password.get()
+        self.confirm_password = self.entry_confirm_password.get()
 
 class Client(tk.Tk):
     def __init__(self):
@@ -40,9 +65,20 @@ class Client(tk.Tk):
         self.register_login_frame = tk.Frame(self, bd=2, relief=tk.GROOVE)
         self.register_login_frame.pack(pady=10)
         self.register_button = tk.Button(
-            self.register_login_frame, text="Daftar", font=("Arial", 12),bd=4)
+            self.register_login_frame, text="Daftar", font=("Arial", 12),bd=4,command=self.register)
         self.register_button.grid(row=0, column=0)
         self.register_login_frame.grid_columnconfigure(1, minsize=50)
         self.login_button = tk.Button(
             self.register_login_frame, text="Masuk", font=("Arial", 12),bd=4)
         self.login_button.grid(row=0, column=1)
+
+    def register(self):
+        dialog = RegisterDialog(self)
+        if dialog.username and dialog.password and dialog.confirm_password:
+            if dialog.password != dialog.confirm_password:
+                tk.messagebox.showerror("Error", "Kata Sandi Tidak Cocok!")
+            else:
+                Database.add_user(dialog.username, hashlib.sha256(dialog.password.encode()).hexdigest())
+                tk.messagebox.showinfo("Sukses", "Pendaftaran berhasil!\nSilahkan Masuk Untuk Melihat Kunci Anda.")
+        else:
+            tk.messagebox.showerror("Error", "Semua Kolom Harus Diisi!")

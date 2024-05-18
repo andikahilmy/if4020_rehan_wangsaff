@@ -3,3 +3,4 @@ uuid
 pytest
 pytest-mock
 tkinter
+hashlib

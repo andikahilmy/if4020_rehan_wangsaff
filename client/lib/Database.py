@@ -16,8 +16,7 @@ class Database:
 id varchar(36) primary key not null,
 name text,
 password text,
-pubkey text,
-privatekey text);"""
+pubkey text);"""
         )
         db.execute(
             """CREATE TABLE chat(
@@ -43,7 +42,22 @@ privatekey text);"""
     def add_message(self,user_id:str,content:str):
         db = sqlite3.connect(Database.DATABASE_PATH)
         chat_id = uuid.uuid4()
-        db.cursor().execute("INSERT INTO chat VALUES(?,?,?)",(chat_id,user_id,content))
+        db.cursor().execute("INSERT INTO chat VALUES(?,?,?)",(str(chat_id),user_id,content))
+        db.commit()
+        db.close()
+    
+    @staticmethod
+    def add_user(name:str,password:str):
+        db = sqlite3.connect(Database.DATABASE_PATH)
+        user_id = uuid.uuid4()
+        print(str(user_id))
+        db.cursor().execute("INSERT INTO user VALUES(?,?,?,?)",(str(user_id),name,password,""))
+        db.commit()
+        db.close()
+    @staticmethod
+    def add_public_key(user_id:str,pubkey:str):
+        db = sqlite3.connect(Database.DATABASE_PATH)
+        db.cursor().execute("UPDATE user SET pubkey=? WHERE id=?",(pubkey,user_id))
         db.commit()
         db.close()
 if __name__=="__main__":
