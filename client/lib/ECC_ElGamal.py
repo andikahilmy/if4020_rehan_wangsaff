@@ -39,7 +39,7 @@ def decode_point(ciphertext:Point)->bytes:
   plaintext = m.to_bytes(math.ceil(m.bit_length() / 8),'little')
   return plaintext
 
-def encrypt(plaintext:bytes,public_key:Point,private_key=None):
+def encrypt(plaintext:bytes,public_key:Point):
   P_M:Point = encode_point(plaintext)
   k = secrets.randbelow(SECP256R1.n)
   while k == 0:

@@ -45,7 +45,7 @@ def test_encrypt_decrypt(mocker):
    # Coba enkripsi
    # public_key = generate_publickey(generate_privatekey())
    plaintext = b"hello"
-   c1,c2 = encrypt(plaintext,pub,priv)
+   c1,c2 = encrypt(plaintext,pub)
    plain = decrypt(c1,c2,priv)
    assert type(plain)==bytes
    assert plain==plaintext
