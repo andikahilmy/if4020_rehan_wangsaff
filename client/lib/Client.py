@@ -8,15 +8,15 @@ class RegisterDialog(simpledialog.Dialog):
     def body(self, master):
         self.title("Pendaftaran Akun")
 
-        tk.Label(master, text="Nama Pengguna:").grid(row=0, column=0, padx=10, pady=5)
+        tk.Label(master, text="Nama Pengguna:",anchor='w').grid(row=0, column=0, padx=10, pady=5,sticky='w')
         self.entry_username = tk.Entry(master)
         self.entry_username.grid(row=0, column=1, padx=10, pady=5)
 
-        tk.Label(master, text="Kata Sandi:").grid(row=1, column=0, padx=10, pady=5)
+        tk.Label(master, text="Kata Sandi:",anchor='w').grid(row=1, column=0, padx=10, pady=5,sticky='w')
         self.entry_password = tk.Entry(master, show='*')
         self.entry_password.grid(row=1, column=1, padx=10, pady=5)
 
-        tk.Label(master, text="Konfirmasi Kata Sandi:").grid(row=2, column=0, padx=10, pady=5)
+        tk.Label(master, text="Konfirmasi Kata Sandi:",anchor='w').grid(row=2, column=0, padx=10, pady=5,sticky='w')
         self.entry_confirm_password = tk.Entry(master, show='*')
         self.entry_confirm_password.grid(row=2, column=1, padx=10, pady=5)
         # Fokuskan input pertama ke username
@@ -30,11 +30,11 @@ class LoginDialog(simpledialog.Dialog):
     def body(self, master):
         self.title("Halaman Masuk")
 
-        tk.Label(master, text="Nama Pengguna:").grid(row=0, column=0, padx=10, pady=5)
+        tk.Label(master, text="Nama Pengguna:",anchor='w').grid(row=0, column=0, padx=10, pady=5,sticky='w')
         self.entry_username = tk.Entry(master)
         self.entry_username.grid(row=0, column=1, padx=10, pady=5)
 
-        tk.Label(master, text="Kata Sandi:").grid(row=1, column=0, padx=10, pady=5)
+        tk.Label(master, text="Kata Sandi:",anchor='w').grid(row=1, column=0, padx=10, pady=5,sticky='w')
         self.entry_password = tk.Entry(master, show='*')
         self.entry_password.grid(row=1, column=1, padx=10, pady=5)
 
