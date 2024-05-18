@@ -51,17 +51,24 @@ class KeyDialog(tk.Toplevel):
         self.title("Informasi Kunci")
         self.geometry("400x200")
         
+        # Public Key
         tk.Label(self, text="Kunci Publik Anda:").pack(pady=(10, 0))
         tk.Label(self, text=str(public_key)).pack(pady=(0, 10))
+        tk.Button(self, text="Unduh Kunci Publik", command=self.download_public_key).pack(pady=(0, 10))
+
+        # Private Key
         tk.Label(self, text="Kunci Privat Anda:").pack(pady=(10, 0))
         tk.Label(self, text=str(private_key)).pack(pady=(0, 10))
-        tk.Button(self, text="Unduh Kunci", command=self.download_keys).pack(pady=(10, 10))
-        
+        tk.Button(self, text="Unduh Kunci Privat", command=self.download_private_key).pack(pady=(0, 10))
+
         self.public_key = public_key
         self.private_key = private_key
 
-    def download_keys(self):
-        tk.messagebox.showinfo("Kunci Anda", f"Kunci Publik Anda:\n{self.public_key}\nKunci Privat Anda:\n{self.private_key}")
+    def download_public_key(self):
+        tk.messagebox.showinfo("Kunci Publik Anda", f"Kunci Publik Anda:\n{self.public_key}")
+
+    def download_private_key(self):
+        tk.messagebox.showinfo("Kunci Privat Anda", f"Kunci Privat Anda:\n{self.private_key}")
 
 class Client(tk.Tk):
     def __init__(self):
