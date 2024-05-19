@@ -1,5 +1,5 @@
 import tkinter as tk
-from tkinter import simpledialog
+from tkinter import simpledialog, filedialog as fd
 from lib.Database import Database
 # from lib.ECC_ElGamal import generate_keypair
 import hashlib
@@ -88,24 +88,40 @@ class KeyDialog(tk.Toplevel):
 
 
     def download_public_key(self):
-        with open(f"keys/{self.user_name}.ecpub", "x") as f:
-            f.write(f"{self.user_name}\n{self.public_key}")
-        tk.messagebox.showinfo("Pengunduhan Sukses", f"Kunci berhasil disimpan di [keys/{self.user_name}.ecpub]")
+        try:
+            with open(f"keys/{self.user_name}.ecpub", "x") as f:
+                f.write(f"{self.user_name}::{self.public_key}")
+        except FileExistsError:
+            tk.messagebox.showwarning("File Sudah Ada", f"Kunci sudah ada di  [keys/{self.user_name}.ecpub] ", icon='warning')
+        else:
+            tk.messagebox.showinfo("Pengunduhan Sukses", f"Kunci berhasil disimpan di [keys/{self.user_name}.ecpub]")
 
     def download_private_key(self):
-        with open(f"keys/{self.user_name}.ecprv", "x") as f:
-            f.write(f"{self.user_name}\n{self.private_key}")
-        tk.messagebox.showinfo("Pengunduhan Sukses", f"Kunci berhasil disimpan di [keys/{self.user_name}.ecprv]")
+        try:
+            with open(f"keys/{self.user_name}.ecprv", "x") as f:
+                f.write(f"{self.user_name}::{self.private_key}")
+        except FileExistsError:
+            tk.messagebox.showwarning("File Sudah Ada", f"Kunci sudah ada di  [keys/{self.user_name}.ecprv] ", icon='warning')
+        else:
+            tk.messagebox.showinfo("Pengunduhan Sukses", f"Kunci berhasil disimpan di [keys/{self.user_name}.ecprv]")
 
     def download_ds_public_key(self):
-        with open(f"keys/{self.user_name}.scpub", "x") as f:
-            f.write(f"{self.user_name}\n{self.ds_public_key}")
-        tk.messagebox.showinfo("Pengunduhan Sukses", f"Kunci berhasil disimpan di [keys/{self.user_name}.scpub]")
+        try:
+            with open(f"keys/{self.user_name}.scpub", "x") as f:
+                f.write(f"{self.user_name}::{self.ds_public_key}")
+        except FileExistsError:
+            tk.messagebox.showwarning("File Sudah Ada", f"Kunci sudah ada di  [keys/{self.user_name}.scpub] ", icon='warning')
+        else:
+            tk.messagebox.showinfo("Pengunduhan Sukses", f"Kunci berhasil disimpan di [keys/{self.user_name}.scpub]")
 
     def download_ds_private_key(self):
-        with open(f"keys/{self.user_name}.scprv", "x") as f:
-            f.write(f"{self.user_name}\n{self.ds_private_key}")
-        tk.messagebox.showinfo("Pengunduhan Sukses", f"Kunci berhasil disimpan di [keys/{self.user_name}.scprv]")
+        try:
+            with open(f"keys/{self.user_name}.scprv", "x") as f:
+                f.write(f"{self.user_name}::{self.ds_private_key}")
+        except FileExistsError:
+            tk.messagebox.showwarning("File Sudah Ada", f"Kunci sudah ada di  [keys/{self.user_name}.scprv] ", icon='warning')
+        else:
+            tk.messagebox.showinfo("Pengunduhan Sukses", f"Kunci berhasil disimpan di [keys/{self.user_name}.scprv]")
 
 class Client(tk.Tk):
     def __init__(self):
@@ -130,13 +146,21 @@ class Client(tk.Tk):
         self.connect_label = tk.Label(
             self.connect_frame, text="Kunci Publik Lawan Bicara:", font=("Arial", 12),anchor='w')
         self.connect_label.grid(row=0, column=0,sticky='w')
-        self.connect_entry = tk.Entry(self.connect_frame, font=("Arial", 12))
-        self.connect_entry.grid(row=0, column=1)
+        self.public_entry = tk.Entry(self.connect_frame, font=("Arial", 12))
+        self.public_entry.grid(row=0, column=1)
+        # Input public key dengan entry dan tombol yang bila dibuka ada file explorer untuk milih file, baca file tersebut, lalu tulis entry
+        self.connect_button = tk.Button(
+            self.connect_frame, text="Pilih Kunci Publik", font=("Arial", 12),bd=4,command=self.select_public_key)
+        self.connect_button.grid(row=0, column=2)
         self.connect_label = tk.Label(
             self.connect_frame, text="Kunci Privat Anda:", font=("Arial", 12),anchor='w')
         self.connect_label.grid(row=1, column=0,sticky='w')
-        self.connect_entry = tk.Entry(self.connect_frame, font=("Arial", 12))
-        self.connect_entry.grid(row=1, column=1)
+        self.private_entry = tk.Entry(self.connect_frame, font=("Arial", 12))
+        self.private_entry.grid(row=1, column=1)
+        # Input public key dengan entry dan tombol yang bila dibuka ada file explorer untuk milih file, baca file tersebut, lalu tulis entry
+        self.connect_button = tk.Button(
+            self.connect_frame, text="Pilih Kunci Privat", font=("Arial", 12),bd=4,command=self.select_private_key)
+        self.connect_button.grid(row=1, column=2)
         # Tambahkan margin antara entry dan tombol
         self.connect_frame.grid_rowconfigure(2, minsize=50)
         self.connect_button = tk.Button(
@@ -176,7 +200,16 @@ class Client(tk.Tk):
             # Bikin dialog yang menampilkan kunci pengguna beserta tombol untuk mengunduh kunci
             #TODO kunci buat digital signature
             KeyDialog(self, user[3], user[4],"","",user[1])
-
-
         else:
             tk.messagebox.showerror("Error", "Username atau kata sandi salah!")
+
+    def select_public_key(self):
+        file_path = fd.askopenfilename(title="Pilih Kunci Publik")
+        with open(file_path, "r") as f:
+            
+            self.public_entry.insert(0, f.read())
+
+    def select_private_key(self):
+        file_path = fd.askopenfilename(title="Pilih Kunci Privat")
+        with open(file_path, "r") as f:
+            self.private_entry.insert(0, f.read())
