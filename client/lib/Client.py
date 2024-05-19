@@ -46,7 +46,7 @@ class LoginDialog(simpledialog.Dialog):
         self.password = self.entry_password.get()
 
 class KeyDialog(tk.Toplevel):
-    def __init__(self, parent, public_key, private_key,ds_public_key,ds_private_key):
+    def __init__(self, parent, public_key, private_key,ds_public_key,ds_private_key,user_name):
         super().__init__(parent)
         self.title("Informasi Kunci")
         self.geometry("400x200")
@@ -84,18 +84,28 @@ class KeyDialog(tk.Toplevel):
         self.ds_public_key = ds_public_key
         self.ds_private_key = ds_private_key
 
+        self.user_name = user_name
+
 
     def download_public_key(self):
-        tk.messagebox.showinfo("Kunci Publik", f"Kunci Publik Anda:\n{self.public_key}")
+        with open(f"keys/{self.user_name}.ecpub", "x") as f:
+            f.write(f"{self.user_name}\n{self.public_key}")
+        tk.messagebox.showinfo("Pengunduhan Sukses", f"Kunci berhasil disimpan di [keys/{self.user_name}.ecpub]")
 
     def download_private_key(self):
-        tk.messagebox.showinfo("Kunci Privat", f"Kunci Privat Anda:\n{self.private_key}")
+        with open(f"keys/{self.user_name}.ecprv", "x") as f:
+            f.write(f"{self.user_name}\n{self.private_key}")
+        tk.messagebox.showinfo("Pengunduhan Sukses", f"Kunci berhasil disimpan di [keys/{self.user_name}.ecprv]")
 
     def download_ds_public_key(self):
-        tk.messagebox.showinfo("Kunci Publik", f"Kunci Publik Anda:\n{self.ds_public_key}")
+        with open(f"keys/{self.user_name}.scpub", "x") as f:
+            f.write(f"{self.user_name}\n{self.ds_public_key}")
+        tk.messagebox.showinfo("Pengunduhan Sukses", f"Kunci berhasil disimpan di [keys/{self.user_name}.scpub]")
 
     def download_ds_private_key(self):
-        tk.messagebox.showinfo("Kunci Privat", f"Kunci Privat Anda:\n{self.ds_private_key}")
+        with open(f"keys/{self.user_name}.scprv", "x") as f:
+            f.write(f"{self.user_name}\n{self.ds_private_key}")
+        tk.messagebox.showinfo("Pengunduhan Sukses", f"Kunci berhasil disimpan di [keys/{self.user_name}.scprv]")
 
 class Client(tk.Tk):
     def __init__(self):
@@ -165,7 +175,7 @@ class Client(tk.Tk):
             # Database.add_public_key(user[0],str(public_key))
             # Bikin dialog yang menampilkan kunci pengguna beserta tombol untuk mengunduh kunci
             #TODO kunci buat digital signature
-            KeyDialog(self, user[3], user[4],"","")
+            KeyDialog(self, user[3], user[4],"","",user[1])
 
 
         else:
