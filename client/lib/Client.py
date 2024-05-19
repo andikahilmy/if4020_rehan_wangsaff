@@ -1,7 +1,7 @@
 import tkinter as tk
 from tkinter import simpledialog
 from lib.Database import Database
-from lib.ECC_ElGamal import generate_keypair
+# from lib.ECC_ElGamal import generate_keypair
 import hashlib
 
 class RegisterDialog(simpledialog.Dialog):
@@ -46,29 +46,56 @@ class LoginDialog(simpledialog.Dialog):
         self.password = self.entry_password.get()
 
 class KeyDialog(tk.Toplevel):
-    def __init__(self, parent, public_key, private_key):
+    def __init__(self, parent, public_key, private_key,ds_public_key,ds_private_key):
         super().__init__(parent)
         self.title("Informasi Kunci")
         self.geometry("400x200")
-        
-        # Public Key
-        tk.Label(self, text="Kunci Publik Anda:").pack(pady=(10, 0))
-        tk.Label(self, text=str(public_key)).pack(pady=(0, 10))
-        tk.Button(self, text="Unduh Kunci Publik", command=self.download_public_key).pack(pady=(0, 10))
 
+        # E2EE Key
+        e2ee_frame = tk.Frame(self, relief=tk.GROOVE,bd=2)
+        e2ee_frame.pack(expand=True,fill=tk.X)
+        tk.Label(e2ee_frame, text="Kunci E2EE", font=("Arial", 16),justify='center').pack(pady=(10, 0))
+        # Public Key
+        tk.Label(e2ee_frame, text="Kunci Publik:").pack(pady=(10, 0),anchor='w')
+        tk.Label(e2ee_frame, text=str(public_key)).pack(pady=(0, 10),anchor='w')
+        tk.Button(e2ee_frame, text="Unduh Kunci Publik", command=self.download_public_key).pack(pady=(0, 10),anchor='center')
         # Private Key
-        tk.Label(self, text="Kunci Privat Anda:").pack(pady=(10, 0))
-        tk.Label(self, text=str(private_key)).pack(pady=(0, 10))
-        tk.Button(self, text="Unduh Kunci Privat", command=self.download_private_key).pack(pady=(0, 10))
+        tk.Label(e2ee_frame, text="Kunci Privat:").pack(pady=(10, 0),anchor='w')
+        tk.Label(e2ee_frame, text=str(private_key)).pack(pady=(0, 10),anchor='w')
+        tk.Button(e2ee_frame, text="Unduh Kunci Privat", command=self.download_private_key).pack(pady=(0, 10),anchor='center')
 
         self.public_key = public_key
         self.private_key = private_key
 
+        # Digital Signature Key
+        ds_frame = tk.Frame(self, relief=tk.GROOVE,bd=2)
+        ds_frame.pack(expand=True,fill=tk.X)
+        tk.Label(ds_frame, text="Kunci Digital Signature", font=("Arial", 16)).pack(pady=(10, 0))
+        # Public Key
+        tk.Label(ds_frame, text="Kunci Publik:").pack(pady=(10, 0))
+        tk.Label(ds_frame, text=str(ds_public_key)).pack(pady=(0, 10))
+        tk.Button(ds_frame, text="Unduh Kunci Publik", command=self.download_ds_public_key).pack(pady=(0, 10))
+
+        # Private Key
+        tk.Label(ds_frame, text="Kunci Privat:").pack(pady=(10, 0))
+        tk.Label(ds_frame, text=str(ds_private_key)).pack(pady=(0, 10))
+        tk.Button(ds_frame, text="Unduh Kunci Privat", command=self.download_ds_private_key).pack(pady=(0, 10))
+
+        self.ds_public_key = ds_public_key
+        self.ds_private_key = ds_private_key
+
+
     def download_public_key(self):
-        tk.messagebox.showinfo("Kunci Publik Anda", f"Kunci Publik Anda:\n{self.public_key}")
+        tk.messagebox.showinfo("Kunci Publik", f"Kunci Publik Anda:\n{self.public_key}")
 
     def download_private_key(self):
-        tk.messagebox.showinfo("Kunci Privat Anda", f"Kunci Privat Anda:\n{self.private_key}")
+        tk.messagebox.showinfo("Kunci Privat", f"Kunci Privat Anda:\n{self.private_key}")
+
+    def download_ds_public_key(self):
+        tk.messagebox.showinfo("Kunci Publik", f"Kunci Publik Anda:\n{self.ds_public_key}")
+
+    def download_ds_private_key(self):
+        tk.messagebox.showinfo("Kunci Privat", f"Kunci Privat Anda:\n{self.ds_private_key}")
 
 class Client(tk.Tk):
     def __init__(self):
@@ -133,11 +160,12 @@ class Client(tk.Tk):
         user = Database.search_user_by_credential(dialog.username, dialog.password)
         if user:
             # Generate key ulang
-            public_key,private_key = generate_keypair()
-            # Simpan public key ke database
-            Database.add_public_key(user[0],str(public_key))
+            # public_key,private_key = generate_keypair()
+            # # Simpan public key ke database
+            # Database.add_public_key(user[0],str(public_key))
             # Bikin dialog yang menampilkan kunci pengguna beserta tombol untuk mengunduh kunci
-            KeyDialog(self, public_key, private_key)
+            #TODO kunci buat digital signature
+            KeyDialog(self, user[3], user[4],"","")
 
 
         else:
