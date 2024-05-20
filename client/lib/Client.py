@@ -131,17 +131,33 @@ class Client(tk.Tk):
         self.title("Wangsaff ©")
         self.geometry("1000x600")
 
+        self.start_page = StartPage(self)
+        self.chat_page = ChatPage(self)
+
+
+        self.show_page(self.start_page)
+
+    def show_page(self, page):
+        page.tkraise()
+
+class StartPage(tk.Frame):
+    def __init__(self, parent):
+        super().__init__(parent)
+        self.grid(row=0, column=0, sticky='nsew')  
+        
+        container = tk.Frame(self)
+        container.grid(row=0, column=0)      
         # Big Lable for title
         self.title_label = tk.Label(
-            self, text="Wangsaff ©", font=("Arial", 24), pady=10)
+            container, text="Wangsaff ©", font=("Arial", 24), pady=10)
         self.title_label.pack()
         # Author credit
         self.author_label = tk.Label(
-            self, text="by Rehan Wangsaff team", font=("Arial", 12), pady=10)
+            container, text="by Rehan Wangsaff team", font=("Arial", 12), pady=10)
         self.author_label.pack()
 
         # Frame untuk memasukkan kunci private dirinya dan kunci publik lawan bicaranya disusun vertikal dan diakhiri tombol "Hubungkan". Frame memiliki border dan label memasukkan kunci publik dan entri berada pada baris yang sama, begitupun yang kunci privat
-        self.connect_frame = tk.Frame(self, bd=2, relief=tk.GROOVE)
+        self.connect_frame = tk.Frame(container, bd=2, relief=tk.GROOVE)
         self.connect_frame.pack(pady=10)
         self.connect_label = tk.Label(
             self.connect_frame, text="Kunci Publik Lawan Bicara:", font=("Arial", 12),anchor='w')
@@ -164,10 +180,10 @@ class Client(tk.Tk):
         # Tambahkan margin antara entry dan tombol
         self.connect_frame.grid_rowconfigure(2, minsize=50)
         self.connect_button = tk.Button(
-            self.connect_frame, text="Hubungkan", font=("Arial", 12),bd=4)
+            self.connect_frame, text="Hubungkan", font=("Arial", 12),bd=4,command=self.open_chat)
         self.connect_button.grid(row=2, column=0, columnspan=2)
         # Tombol untuk mengakses kunci pengguna
-        self.register_login_frame = tk.Frame(self, bd=2, relief=tk.GROOVE)
+        self.register_login_frame = tk.Frame(container, bd=2, relief=tk.GROOVE)
         self.register_login_frame.pack(pady=10)
         self.register_button = tk.Button(
             self.register_login_frame, text="Daftar", font=("Arial", 12),bd=4,command=self.register)
@@ -176,6 +192,25 @@ class Client(tk.Tk):
         self.login_button = tk.Button(
             self.register_login_frame, text="Masuk", font=("Arial", 12),bd=4,command=self.login)
         self.login_button.grid(row=0, column=1)
+
+    def open_chat(self):
+        # Bikin dialog konfirmasi "Apakah kunci yang Anda masukkan sudah benar?"
+        confirm = tk.messagebox.askyesno("Konfirmasi", "Apakah kunci yang Anda masukkan sudah benar?")
+        if not confirm:
+            return
+        print("masuk")
+        # Baca entry kunci privat dan publik.
+        public_key = self.public_entry.get()
+        private_key = self.private_entry.get()
+        # Jika salah satu kosong, tampilkan pesan error
+        if not public_key or not private_key:
+            tk.messagebox.showerror("Error", "Kunci Publik dan Privat Harus Diisi!")
+            return
+        # Buka chat window
+        # ChatWindow(self, public_key, private_key)
+        self.master.show_page(self.master.chat_page)
+
+
 
     def register(self):
         dialog = RegisterDialog(self)
@@ -213,3 +248,88 @@ class Client(tk.Tk):
         file_path = fd.askopenfilename(title="Pilih Kunci Privat")
         with open(file_path, "r") as f:
             self.private_entry.insert(0, f.read())
+
+class ChatPage(tk.Frame):
+    def __init__(self, parent):
+        super().__init__(parent)
+        self.grid(row=0, column=0, sticky='nsew')
+
+        self.chat_display = tk.Text(self, state='disabled', width=50, height=10)
+        self.chat_display.pack(pady=5)
+        self.message_entry = tk.Entry(self, width=50)
+        self.message_entry.pack(pady=5)
+        tk.Button(self, text="Send", command=self.send_message).pack(pady=5)
+        tk.Button(self, text="Back", command=self.back_to_start).pack(pady=20)
+
+    def send_message(self):
+        message = self.message_entry.get()
+        if message:
+            self.chat_display.config(state='normal')
+            self.chat_display.insert(tk.END, f"You: {message}\n")
+            self.chat_display.config(state='disabled')
+            self.message_entry.delete(0, tk.END)
+
+    def back_to_start(self):
+        self.master.show_page(self.master.start_page)
+
+"""
+import tkinter as tk
+
+class App(tk.Tk):
+    def __init__(self):
+        super().__init__()
+        self.title("Replaceable GUI")
+        self.geometry("400x300")
+
+        self.login_frame = LoginFrame(self)
+        self.chat_frame = ChatFrame(self)
+
+        self.show_frame(self.login_frame)
+
+    def show_frame(self, frame):
+        frame.tkraise()
+
+class LoginFrame(tk.Frame):
+    def __init__(self, parent):
+        super().__init__(parent)
+        self.grid(row=0, column=0, sticky='nsew')
+        
+        tk.Label(self, text="Login").pack(pady=20)
+        self.username_entry = tk.Entry(self)
+        self.username_entry.pack(pady=5)
+        self.password_entry = tk.Entry(self, show="*")
+        self.password_entry.pack(pady=5)
+        tk.Button(self, text="Start", command=self.start_chat).pack(pady=20)
+    
+    def start_chat(self):
+        self.master.show_frame(self.master.chat_frame)
+
+class ChatFrame(tk.Frame):
+    def __init__(self, parent):
+        super().__init__(parent)
+        self.grid(row=0, column=0, sticky='nsew')
+
+        tk.Label(self, text="Chat").pack(pady=20)
+        self.chat_display = tk.Text(self, state='disabled', width=50, height=10)
+        self.chat_display.pack(pady=5)
+        self.message_entry = tk.Entry(self, width=50)
+        self.message_entry.pack(pady=5)
+        tk.Button(self, text="Send", command=self.send_message).pack(pady=5)
+        tk.Button(self, text="Back", command=self.back_to_login).pack(pady=20)
+    
+    def send_message(self):
+        message = self.message_entry.get()
+        if message:
+            self.chat_display.config(state='normal')
+            self.chat_display.insert(tk.END, f"You: {message}\n")
+            self.chat_display.config(state='disabled')
+            self.message_entry.delete(0, tk.END)
+    
+    def back_to_login(self):
+        self.master.show_frame(self.master.login_frame)
+
+if __name__ == "__main__":
+    app = App()
+    app.mainloop()
+
+"""
