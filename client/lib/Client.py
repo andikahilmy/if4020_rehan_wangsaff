@@ -197,7 +197,7 @@ class StartPage(tk.Frame):
         self.register_login_frame = tk.Frame(container, bd=2, relief=tk.GROOVE)
         self.register_login_frame.pack(pady=10)
         self.register_button = tk.Button(
-            self.register_login_frame, text="Daftar", font=("Arial", 12), bd=4, command=self.register)
+            self.register_login_frame, text="Daftar", font=("Arial", 12), bd=4, command=self.register_user)
         self.register_button.grid(row=0, column=0)
         self.register_login_frame.grid_columnconfigure(1, minsize=50)
         self.login_button = tk.Button(
@@ -219,7 +219,7 @@ class StartPage(tk.Frame):
         # Buka chat window
         self.master.show_page(self.master.chat_page)
 
-    def register(self):
+    def register_user(self):
         dialog = RegisterDialog(self)
         if dialog.username and dialog.password and dialog.confirm_password:
             if dialog.password != dialog.confirm_password:
