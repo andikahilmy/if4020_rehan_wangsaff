@@ -243,11 +243,15 @@ class StartPage(tk.Frame):
 
     def select_public_key(self):
         file_path = fd.askopenfilename(title="Pilih Kunci Publik")
+        if not file_path:
+            return 
         with open(file_path, "r") as f:
             self.public_entry.insert(0, f.read())
 
     def select_private_key(self):
         file_path = fd.askopenfilename(title="Pilih Kunci Privat")
+        if not file_path:
+            return
         with open(file_path, "r") as f:
             self.private_entry.insert(0, f.read())
 
