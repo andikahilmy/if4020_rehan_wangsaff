@@ -38,7 +38,7 @@ def test_encrypt(mocker):
    assert type(c1)==Point
    assert type(c2)==Point
 
-def test_encrypt_decrypt(mocker):
+def test_encrypt_decrypt():
    pub,priv = generate_keypair()
    # mocker.patch('client.lib.ECC_ElGamal.encode_point', return_value=Point(1000,1000,curve))
    # mocker.patch('client.lib.ECC_ElGamal.decode_point', return_value=b"hello")
