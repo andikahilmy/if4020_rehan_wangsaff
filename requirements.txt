@@ -2,5 +2,6 @@ uvicorn[standard]
 uuid
 pytest
 pytest-mock
-tkinter
-hashlib
+tk
+argparse
+requests
