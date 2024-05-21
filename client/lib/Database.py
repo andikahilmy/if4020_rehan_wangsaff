@@ -2,7 +2,7 @@ import os
 import sqlite3
 import uuid
 import hashlib
-from lib.ECC_ElGamal import generate_keypair
+from .ECC_ElGamal import generate_keypair
 
 class Database:
     DATABASE_PATH = "client/db/client.db"

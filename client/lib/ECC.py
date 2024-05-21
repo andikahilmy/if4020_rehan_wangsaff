@@ -1,5 +1,5 @@
 from typing import Type
-from lib.utils import sqrt_mod
+from .utils import sqrt_mod
 from dataclasses import dataclass
 # Kurva: # y^2 =  x^3 + ax + b  (mod p)
 
@@ -10,6 +10,13 @@ class Point:
         self.y = y
         self.curve:ElipticCurve = curve
 
+    @staticmethod
+    def from_string(s:str,curve:Type['ElipticCurve'])->Type['Point']:
+        try:
+            x,y = s[1:-1].split(',')
+        except ValueError:
+            return Point(None,None,curve)
+        return Point(int(x),int(y),curve)
     # Perkalian skalar dengan titik
     def __mul__(self, scalar: int):
         if self.is_infinity():

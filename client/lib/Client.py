@@ -1,6 +1,6 @@
 import tkinter as tk
 from tkinter import simpledialog, filedialog as fd
-from lib.Database import Database
+from .Database import Database
 # from lib.ECC_ElGamal import generate_keypair
 import hashlib
 
