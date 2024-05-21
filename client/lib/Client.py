@@ -131,9 +131,11 @@ class Client(tk.Tk):
         self.title("Wangsaff ©")
         self.geometry("1000x600")
 
+        self.grid_rowconfigure(0, weight=1)
+        self.grid_columnconfigure(0, weight=1)
+
         self.start_page = StartPage(self)
         self.chat_page = ChatPage(self)
-
 
         self.show_page(self.start_page)
 
@@ -143,14 +145,19 @@ class Client(tk.Tk):
 class StartPage(tk.Frame):
     def __init__(self, parent):
         super().__init__(parent)
-        self.grid(row=0, column=0, sticky='nsew')  
-        
+        self.grid(row=0, column=0, sticky='nsew')
+
+        self.grid_rowconfigure(0, weight=1)
+        self.grid_columnconfigure(0, weight=1)
+
         container = tk.Frame(self)
-        container.grid(row=0, column=0)      
-        # Big Lable for title
+        container.grid(row=0, column=0)
+        
+        # Big Label for title
         self.title_label = tk.Label(
             container, text="Wangsaff ©", font=("Arial", 24), pady=10)
         self.title_label.pack()
+        
         # Author credit
         self.author_label = tk.Label(
             container, text="by Rehan Wangsaff team", font=("Arial", 12), pady=10)
@@ -159,38 +166,42 @@ class StartPage(tk.Frame):
         # Frame untuk memasukkan kunci private dirinya dan kunci publik lawan bicaranya disusun vertikal dan diakhiri tombol "Hubungkan". Frame memiliki border dan label memasukkan kunci publik dan entri berada pada baris yang sama, begitupun yang kunci privat
         self.connect_frame = tk.Frame(container, bd=2, relief=tk.GROOVE)
         self.connect_frame.pack(pady=10)
+        
         self.connect_label = tk.Label(
-            self.connect_frame, text="Kunci Publik Lawan Bicara:", font=("Arial", 12),anchor='w')
-        self.connect_label.grid(row=0, column=0,sticky='w')
+            self.connect_frame, text="Kunci Publik Lawan Bicara:", font=("Arial", 12), anchor='w')
+        self.connect_label.grid(row=0, column=0, sticky='w')
         self.public_entry = tk.Entry(self.connect_frame, font=("Arial", 12))
         self.public_entry.grid(row=0, column=1)
-        # Input public key dengan entry dan tombol yang bila dibuka ada file explorer untuk milih file, baca file tersebut, lalu tulis entry
+        
         self.connect_button = tk.Button(
-            self.connect_frame, text="Pilih Kunci Publik", font=("Arial", 12),bd=4,command=self.select_public_key)
+            self.connect_frame, text="Pilih Kunci Publik", font=("Arial", 12), bd=4, command=self.select_public_key)
         self.connect_button.grid(row=0, column=2)
+        
         self.connect_label = tk.Label(
-            self.connect_frame, text="Kunci Privat Anda:", font=("Arial", 12),anchor='w')
-        self.connect_label.grid(row=1, column=0,sticky='w')
+            self.connect_frame, text="Kunci Privat Anda:", font=("Arial", 12), anchor='w')
+        self.connect_label.grid(row=1, column=0, sticky='w')
         self.private_entry = tk.Entry(self.connect_frame, font=("Arial", 12))
         self.private_entry.grid(row=1, column=1)
-        # Input public key dengan entry dan tombol yang bila dibuka ada file explorer untuk milih file, baca file tersebut, lalu tulis entry
+        
         self.connect_button = tk.Button(
-            self.connect_frame, text="Pilih Kunci Privat", font=("Arial", 12),bd=4,command=self.select_private_key)
+            self.connect_frame, text="Pilih Kunci Privat", font=("Arial", 12), bd=4, command=self.select_private_key)
         self.connect_button.grid(row=1, column=2)
-        # Tambahkan margin antara entry dan tombol
+        
         self.connect_frame.grid_rowconfigure(2, minsize=50)
+        
         self.connect_button = tk.Button(
-            self.connect_frame, text="Hubungkan", font=("Arial", 12),bd=4,command=self.open_chat)
+            self.connect_frame, text="Hubungkan", font=("Arial", 12), bd=4, command=self.open_chat)
         self.connect_button.grid(row=2, column=0, columnspan=2)
+        
         # Tombol untuk mengakses kunci pengguna
         self.register_login_frame = tk.Frame(container, bd=2, relief=tk.GROOVE)
         self.register_login_frame.pack(pady=10)
         self.register_button = tk.Button(
-            self.register_login_frame, text="Daftar", font=("Arial", 12),bd=4,command=self.register)
+            self.register_login_frame, text="Daftar", font=("Arial", 12), bd=4, command=self.register)
         self.register_button.grid(row=0, column=0)
         self.register_login_frame.grid_columnconfigure(1, minsize=50)
         self.login_button = tk.Button(
-            self.register_login_frame, text="Masuk", font=("Arial", 12),bd=4,command=self.login)
+            self.register_login_frame, text="Masuk", font=("Arial", 12), bd=4, command=self.login)
         self.login_button.grid(row=0, column=1)
 
     def open_chat(self):
@@ -198,7 +209,6 @@ class StartPage(tk.Frame):
         confirm = tk.messagebox.askyesno("Konfirmasi", "Apakah kunci yang Anda masukkan sudah benar?")
         if not confirm:
             return
-        print("masuk")
         # Baca entry kunci privat dan publik.
         public_key = self.public_entry.get()
         private_key = self.private_entry.get()
@@ -207,10 +217,7 @@ class StartPage(tk.Frame):
             tk.messagebox.showerror("Error", "Kunci Publik dan Privat Harus Diisi!")
             return
         # Buka chat window
-        # ChatWindow(self, public_key, private_key)
         self.master.show_page(self.master.chat_page)
-
-
 
     def register(self):
         dialog = RegisterDialog(self)
@@ -228,20 +235,15 @@ class StartPage(tk.Frame):
         # cari user
         user = Database.search_user_by_credential(dialog.username, dialog.password)
         if user:
-            # Generate key ulang
-            # public_key,private_key = generate_keypair()
-            # # Simpan public key ke database
-            # Database.add_public_key(user[0],str(public_key))
             # Bikin dialog yang menampilkan kunci pengguna beserta tombol untuk mengunduh kunci
-            #TODO kunci buat digital signature
-            KeyDialog(self, user[3], user[4],"","",user[1])
+            # TODO kunci buat digital signature
+            KeyDialog(self, user[3], user[4], "", "", user[1])
         else:
             tk.messagebox.showerror("Error", "Username atau kata sandi salah!")
 
     def select_public_key(self):
         file_path = fd.askopenfilename(title="Pilih Kunci Publik")
         with open(file_path, "r") as f:
-            
             self.public_entry.insert(0, f.read())
 
     def select_private_key(self):
@@ -254,12 +256,18 @@ class ChatPage(tk.Frame):
         super().__init__(parent)
         self.grid(row=0, column=0, sticky='nsew')
 
-        self.chat_display = tk.Text(self, state='disabled', width=50, height=10)
+        self.grid_rowconfigure(0, weight=1)
+        self.grid_columnconfigure(0, weight=1)
+
+        container = tk.Frame(self)
+        container.grid(row=0, column=0)
+
+        self.chat_display = tk.Text(container, state='disabled', width=50, height=10)
         self.chat_display.pack(pady=5)
-        self.message_entry = tk.Entry(self, width=50)
+        self.message_entry = tk.Entry(container, width=50)
         self.message_entry.pack(pady=5)
-        tk.Button(self, text="Send", command=self.send_message).pack(pady=5)
-        tk.Button(self, text="Back", command=self.back_to_start).pack(pady=20)
+        tk.Button(container, text="Send", command=self.send_message).pack(pady=5)
+        tk.Button(container, text="Back", command=self.back_to_start).pack(pady=20)
 
     def send_message(self):
         message = self.message_entry.get()
