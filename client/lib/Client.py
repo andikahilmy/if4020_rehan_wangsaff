@@ -216,6 +216,8 @@ class StartPage(tk.Frame):
         if not public_key or not private_key:
             tk.messagebox.showerror("Error", "Kunci Publik dan Privat Harus Diisi!")
             return
+        # init chat
+        self.master.chat_page.init_chat(public_key,private_key)
         # Buka chat window
         self.master.show_page(self.master.chat_page)
 
@@ -272,6 +274,19 @@ class ChatPage(tk.Frame):
         self.message_entry.pack(pady=5)
         tk.Button(container, text="Send", command=self.send_message).pack(pady=5)
         tk.Button(container, text="Back", command=self.back_to_start).pack(pady=20)
+
+    def init_chat(self,public_key:str,private_key:str):
+        tmp = public_key.split("::")
+        self.chatmate = tmp[0]
+        if len(tmp)<2:
+            self.public_key = tmp[0]
+        else:
+            self.public_key = tmp[1]
+        tmp = private_key.split("::")
+        if len(tmp)<2:
+            self.private_key = tmp[0]
+        else:
+            self.private_key = tmp[1]
 
     def send_message(self):
         message = self.message_entry.get()
