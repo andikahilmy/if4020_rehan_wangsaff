@@ -1,10 +1,10 @@
 all: run-server run-client
 
 run-server:
-	uvicorn server.main:app --reload
+	uvicorn server.main:app --port ${port} --reload
 
 run-client:
-	python client/main.py
+	python client/main.py ${port} ${server}
 
 testing:
 	pytest test -v

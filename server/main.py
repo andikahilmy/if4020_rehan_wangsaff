@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 
-app = FastAPI()
+app = FastAPI(port=args.port)
 
 @app.get('/')
 async def root():

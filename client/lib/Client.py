@@ -2,6 +2,7 @@ import tkinter as tk
 from tkinter import simpledialog, filedialog as fd
 from .Database import Database
 from .E2EE import E2EE
+from .ALS import ALS
 import hashlib
 
 class RegisterDialog(simpledialog.Dialog):
@@ -124,7 +125,7 @@ class KeyDialog(tk.Toplevel):
             tk.messagebox.showinfo("Pengunduhan Sukses", f"Kunci berhasil disimpan di [keys/{self.user_name}.scprv]")
 
 class Client(tk.Tk):
-    def __init__(self,port:int):
+    def __init__(self,port:int,server_port:int):
         super().__init__()
 
         # Atur window
@@ -134,10 +135,14 @@ class Client(tk.Tk):
         self.grid_rowconfigure(0, weight=1)
         self.grid_columnconfigure(0, weight=1)
 
+        self.als = ALS(port,server_port)
+        self.als.init_connection()
+
         self.start_page = StartPage(self)
-        self.chat_page = ChatPage(self,port)
+        self.chat_page = ChatPage(self,port,server_port)
 
         self.show_page(self.start_page)
+
 
     def show_page(self, page):
         page.tkraise()
@@ -258,9 +263,10 @@ class StartPage(tk.Frame):
             self.private_entry.insert(0, f.read())
 
 class ChatPage(tk.Frame):
-    def __init__(self, parent, port: int):
+    def __init__(self, parent, port: int,server_port:int):
         super().__init__(parent)
         self.port = port
+        self.server_port = server_port
         # grid semua elemen
         self.grid(row=0, column=0, sticky='nsew')
         # Buat chat screen
@@ -322,7 +328,10 @@ class ChatPage(tk.Frame):
         message = self.message_entry.get()
         if message:
             # Simpan ke database
-            Database.add_message(self.port,E2EE.encrypt(message.encode(),self.public_key))
+            e2ee_encrypted_message = E2EE.encrypt(message.encode(),self.public_key)
+            Database.add_message(self.port,e2ee_encrypted_message)
+            # Kirim pesan
+            self.master.als.send(e2ee_encrypted_message)
             # Cetak Pesan
             self.chat_display.config(state='normal')
             self.chat_display.insert(tk.END, f"You: {message}\n")
