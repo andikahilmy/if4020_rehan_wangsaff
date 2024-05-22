@@ -273,7 +273,9 @@ class ChatPage(tk.Frame):
 
         # tombol back
         back_frame = tk.Frame(paned_window)
-        tk.Button(back_frame, text="Back", command=self.back_to_start,width=40,height=2,image=tk.PhotoImage(file="res/images/arrow.png"),compound=tk.LEFT).pack(pady=10,side=tk.LEFT)
+        #WARNING: kalau nih fungsi kelar bakal kena garbage collection dan gambar ilang, makanya perlu pakain self
+        self.back_logo = tk.PhotoImage(file="res/images/arrow.png").subsample(16,16)
+        tk.Button(back_frame, command=self.back_to_start,compound=tk.LEFT,image=self.back_logo,height=30,width=75,bd=4).pack(pady=10,side=tk.LEFT)
         paned_window.add(back_frame)
         
         # frame untuk chat screen
