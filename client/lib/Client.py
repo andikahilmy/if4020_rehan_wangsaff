@@ -267,18 +267,19 @@ class ChatPage(tk.Frame):
         self.grid_rowconfigure(0, weight=1)
         self.grid_columnconfigure(0, weight=1)
 
-        # Buat PanedWindow untuk memisahkan chat screen dan message box
+        # Buat PanedWindow untuk memisahkan tombol back,chat screen dan message box
         paned_window = tk.PanedWindow(self, orient=tk.VERTICAL)
         paned_window.grid(row=0, column=0, sticky='nsew')
+
+        # tombol back
+        back_frame = tk.Frame(paned_window)
+        tk.Button(back_frame, text="Back", command=self.back_to_start,width=40,height=2,image=tk.PhotoImage(file="res/images/arrow.png"),compound=tk.LEFT).pack(pady=10,side=tk.LEFT)
+        paned_window.add(back_frame)
         
         # frame untuk chat screen
         top_frame = tk.Frame(paned_window)
         paned_window.add(top_frame, stretch='always')
-        paned_window.paneconfig(top_frame, height=300)  # Tinggi chat screen
-        
-        # frame untuk message box
-        bottom_frame = tk.Frame(paned_window)
-        paned_window.add(bottom_frame)
+        paned_window.paneconfig(top_frame, height=400)  # Tinggi chat screen
 
         # Atur scrollbar
         chat_display_frame = tk.Frame(top_frame)
@@ -287,13 +288,20 @@ class ChatPage(tk.Frame):
         self.chat_display = tk.Text(chat_display_frame, state='disabled', width=50, height=10, yscrollcommand=chat_display_scrollbar.set)
         chat_display_scrollbar.config(command=self.chat_display.yview)
         chat_display_scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
-        self.chat_display.pack(side=tk.LEFT, fill=tk.BOTH, expand=True, pady=5)
+        self.chat_display.pack(side=tk.LEFT, fill=tk.BOTH, expand=True, pady=3)
 
-        # Message box buat entry dan tombol terkait
-        self.message_entry = tk.Entry(bottom_frame, width=50)
-        self.message_entry.pack(pady=5)
-        tk.Button(bottom_frame, text="Send", command=self.send_message).pack(pady=5)
-        tk.Button(bottom_frame, text="Back", command=self.back_to_start).pack(pady=20)
+        # Frame untuk input teks
+        input_frame = tk.Frame(paned_window)
+        input_frame.pack(fill=tk.X, expand=True, pady=5)
+        paned_window.add(input_frame, stretch='always')
+        input_frame.grid_columnconfigure(0, weight=1)
+
+        # Input pesan dan tombol
+        self.message_entry = tk.Entry(input_frame, width=50)
+        self.message_entry.grid(row=0, column=0, padx=5, pady=5, sticky='ew')
+        tk.Button(input_frame, text="Send", command=self.send_message).grid(row=0, column=1, padx=5, pady=5)
+        tk.Button(input_frame, text="Sign and Send", command=self.send_message).grid(row=0, column=2, padx=5, pady=5)
+
 
     def init_chat(self,public_key:str,private_key:str):
         tmp = public_key.split("::")
