@@ -5,3 +5,5 @@ pytest-mock
 tk
 argparse
 requests
+websockets
+asyncio

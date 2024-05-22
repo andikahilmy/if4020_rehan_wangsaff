@@ -1,7 +1,7 @@
 all: run-server run-client
 
 run-server:
-	uvicorn server.main:app --port ${port} --reload
+	python server/main.py ${port}
 
 run-client:
 	python client/main.py ${port} ${server}
