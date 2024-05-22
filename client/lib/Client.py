@@ -124,7 +124,7 @@ class KeyDialog(tk.Toplevel):
             tk.messagebox.showinfo("Pengunduhan Sukses", f"Kunci berhasil disimpan di [keys/{self.user_name}.scprv]")
 
 class Client(tk.Tk):
-    def __init__(self):
+    def __init__(self,port:int):
         super().__init__()
 
         # Atur window
@@ -135,7 +135,7 @@ class Client(tk.Tk):
         self.grid_columnconfigure(0, weight=1)
 
         self.start_page = StartPage(self)
-        self.chat_page = ChatPage(self)
+        self.chat_page = ChatPage(self,port)
 
         self.show_page(self.start_page)
 
@@ -258,22 +258,42 @@ class StartPage(tk.Frame):
             self.private_entry.insert(0, f.read())
 
 class ChatPage(tk.Frame):
-    def __init__(self, parent):
+    def __init__(self, parent, port: int):
         super().__init__(parent)
+        self.port = port
+        # grid semua elemen
         self.grid(row=0, column=0, sticky='nsew')
-
+        # Buat chat screen
         self.grid_rowconfigure(0, weight=1)
         self.grid_columnconfigure(0, weight=1)
 
-        container = tk.Frame(self)
-        container.grid(row=0, column=0)
+        # Buat PanedWindow untuk memisahkan chat screen dan message box
+        paned_window = tk.PanedWindow(self, orient=tk.VERTICAL)
+        paned_window.grid(row=0, column=0, sticky='nsew')
+        
+        # frame untuk chat screen
+        top_frame = tk.Frame(paned_window)
+        paned_window.add(top_frame, stretch='always')
+        paned_window.paneconfig(top_frame, height=300)  # Tinggi chat screen
+        
+        # frame untuk message box
+        bottom_frame = tk.Frame(paned_window)
+        paned_window.add(bottom_frame)
 
-        self.chat_display = tk.Text(container, state='disabled', width=50, height=10)
-        self.chat_display.pack(pady=5)
-        self.message_entry = tk.Entry(container, width=50)
+        # Atur scrollbar
+        chat_display_frame = tk.Frame(top_frame)
+        chat_display_frame.pack(fill=tk.BOTH, expand=True)
+        chat_display_scrollbar = tk.Scrollbar(chat_display_frame)
+        self.chat_display = tk.Text(chat_display_frame, state='disabled', width=50, height=10, yscrollcommand=chat_display_scrollbar.set)
+        chat_display_scrollbar.config(command=self.chat_display.yview)
+        chat_display_scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+        self.chat_display.pack(side=tk.LEFT, fill=tk.BOTH, expand=True, pady=5)
+
+        # Message box buat entry dan tombol terkait
+        self.message_entry = tk.Entry(bottom_frame, width=50)
         self.message_entry.pack(pady=5)
-        tk.Button(container, text="Send", command=self.send_message).pack(pady=5)
-        tk.Button(container, text="Back", command=self.back_to_start).pack(pady=20)
+        tk.Button(bottom_frame, text="Send", command=self.send_message).pack(pady=5)
+        tk.Button(bottom_frame, text="Back", command=self.back_to_start).pack(pady=20)
 
     def init_chat(self,public_key:str,private_key:str):
         tmp = public_key.split("::")
@@ -291,72 +311,28 @@ class ChatPage(tk.Frame):
     def send_message(self):
         message = self.message_entry.get()
         if message:
+            # Cetak Pesan
             self.chat_display.config(state='normal')
             self.chat_display.insert(tk.END, f"You: {message}\n")
+
+            # Tombol buat melihat dan verifikasi signature
+            view_button = tk.Button(self.chat_display, text="Lihat Signature", command=self.view_signature)
+            verify_button = tk.Button(self.chat_display, text="Verifikasi Signature", command=self.verify_signature)
+
+            # Tambahkan tombol ke display
+            self.chat_display.window_create(tk.END, window=view_button)
+            self.chat_display.window_create(tk.END, window=verify_button)
+            self.chat_display.insert(tk.END, "\n")
+
+            # Hapus teks di message box
             self.chat_display.config(state='disabled')
             self.message_entry.delete(0, tk.END)
 
     def back_to_start(self):
         self.master.show_page(self.master.start_page)
 
-"""
-import tkinter as tk
+    def verify_signature(self):
+        tk.messagebox.showinfo("Verification", "The signature is valid.")
 
-class App(tk.Tk):
-    def __init__(self):
-        super().__init__()
-        self.title("Replaceable GUI")
-        self.geometry("400x300")
-
-        self.login_frame = LoginFrame(self)
-        self.chat_frame = ChatFrame(self)
-
-        self.show_frame(self.login_frame)
-
-    def show_frame(self, frame):
-        frame.tkraise()
-
-class LoginFrame(tk.Frame):
-    def __init__(self, parent):
-        super().__init__(parent)
-        self.grid(row=0, column=0, sticky='nsew')
-        
-        tk.Label(self, text="Login").pack(pady=20)
-        self.username_entry = tk.Entry(self)
-        self.username_entry.pack(pady=5)
-        self.password_entry = tk.Entry(self, show="*")
-        self.password_entry.pack(pady=5)
-        tk.Button(self, text="Start", command=self.start_chat).pack(pady=20)
-    
-    def start_chat(self):
-        self.master.show_frame(self.master.chat_frame)
-
-class ChatFrame(tk.Frame):
-    def __init__(self, parent):
-        super().__init__(parent)
-        self.grid(row=0, column=0, sticky='nsew')
-
-        tk.Label(self, text="Chat").pack(pady=20)
-        self.chat_display = tk.Text(self, state='disabled', width=50, height=10)
-        self.chat_display.pack(pady=5)
-        self.message_entry = tk.Entry(self, width=50)
-        self.message_entry.pack(pady=5)
-        tk.Button(self, text="Send", command=self.send_message).pack(pady=5)
-        tk.Button(self, text="Back", command=self.back_to_login).pack(pady=20)
-    
-    def send_message(self):
-        message = self.message_entry.get()
-        if message:
-            self.chat_display.config(state='normal')
-            self.chat_display.insert(tk.END, f"You: {message}\n")
-            self.chat_display.config(state='disabled')
-            self.message_entry.delete(0, tk.END)
-    
-    def back_to_login(self):
-        self.master.show_frame(self.master.login_frame)
-
-if __name__ == "__main__":
-    app = App()
-    app.mainloop()
-
-"""
+    def view_signature(self):
+        tk.messagebox.showinfo("Pake Nanya")
