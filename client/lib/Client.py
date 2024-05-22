@@ -1,7 +1,6 @@
 import tkinter as tk
 from tkinter import simpledialog, filedialog as fd
 from .Database import Database
-# from lib.ECC_ElGamal import generate_keypair
 import hashlib
 
 class RegisterDialog(simpledialog.Dialog):
@@ -311,6 +310,8 @@ class ChatPage(tk.Frame):
     def send_message(self):
         message = self.message_entry.get()
         if message:
+            # Simpan ke database
+            Database.add_message(self.port,message)
             # Cetak Pesan
             self.chat_display.config(state='normal')
             self.chat_display.insert(tk.END, f"You: {message}\n")

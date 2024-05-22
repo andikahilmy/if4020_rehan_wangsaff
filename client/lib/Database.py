@@ -2,6 +2,7 @@ import os
 import sqlite3
 import uuid
 import hashlib
+import datetime
 from .ECC_ElGamal import generate_keypair
 
 
@@ -31,7 +32,7 @@ privkey text);"""
   chat_id varchar(36) not null,
   src_port integer not null,
   content text,
-  date timestamp default CURRENT_TIMESTAMP,
+  date text,
   PRIMARY KEY (chat_id)               
     );
 """
@@ -52,7 +53,7 @@ privkey text);"""
         db = sqlite3.connect(Database.DATABASE_PATH)
         chat_id = uuid.uuid4()
         db.cursor().execute(
-            "INSERT INTO chat VALUES(?,?,?)", (str(chat_id), port, content)
+            "INSERT INTO chat VALUES(?,?,?,?)", (str(chat_id), port, content,datetime.datetime.now().isoformat())
         )
         db.commit()
         db.close()
