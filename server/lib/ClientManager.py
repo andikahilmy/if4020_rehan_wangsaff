@@ -11,8 +11,10 @@ class ClientManager():
   def disconnect(self,port:int):
     del self.CONNECTIONS[port]
 
-  async def send_message(self,dst_port,message:str):
+  async def send_message(self,dst_port,message:str)->bool:
     try:
-      self.CONNECTIONS[dst_port][0].send_text(message)
+      await self.CONNECTIONS[dst_port][0].send_text(message)
+      return True
     except KeyError:
       self.logger.error("Client not found")
+      return False

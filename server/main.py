@@ -17,37 +17,48 @@ async def root():
   return {"message":"Hello World!"}
 
 
-@app.websocket('/connect')
-# buat handshake
-async def connect(ws:WebSocket):
-  await ws.accept()
-  logger.info(f"Received connection from {ws.client.host}:{ws.client.port}")
-  try:
-    while True:
-      data = await ws.receive_text()
-      #TODO Handshake
-      shared_key = ""
-      manager.connect(ws,shared_key)
-      # TODO handshake: Konfirmasi
-      await ws.send_text("Connection Established")
-  except WebSocketDisconnect:
-    logger.info(f"Client {ws} disconnected")
 
 @app.websocket('/messaging')
 # buat nerima pesan dari klien A dan ngirim ke klien B
 async def messaging(ws:WebSocket):
   await ws.accept()
+  logger.info(f"Received connection from {ws.client.host}:{ws.client.port}")
+  try:
+    #TODO handshake
+    data = await ws.receive_text()
+    #TODO Handshake
+    shared_key = ""
+    manager.connect(ws,shared_key)
+    # Konfirmasi handshake
+    await ws.send_text("Connection Established")
+  except WebSocketDisconnect:
+    logger.info(f"Client {ws} disconnected")
+
+  # Komunikasi
   try:
     while True:
       data = await ws.receive_text()
-      #TODO decrypt data
+      #TODO decrypt data dari ALS
       # Parse ke json
       message = json.loads(data)
-      logger.info(f"Received message: {message} from {ws}")
-      #TODO kirim ke B
-      await ws.send_json(message)
+      # Format pesan
+      #{
+      #  "src_port": "int",
+      #  "dst_port": "int",
+      #  "message": "str"
+      #}
+      logger.info(f"Received message from {ws}")
+      #TODO encrypt data ke ALS
+      encrypted_message = data
+      is_success = await manager.send_message(message['dst_port'],encrypted_message)
+      if is_success:
+        await ws.send_text("Message sent")
+      else:
+        await ws.send_text("Failed to send message")
   except WebSocketDisconnect:
     logger.info(f"Client {ws} disconnected")
+  except json.JSONDecodeError:
+    logger.error("Invalid JSON format")
 
 @app.get("/digital-signature-param")
 # buat dapatin global variabel digital signature
