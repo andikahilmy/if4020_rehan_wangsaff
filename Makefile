@@ -4,7 +4,7 @@ run-server:
 	uvicorn server.main:app --port ${port} --reload
 
 run-client:
-	python client/main.py ${port} ${server}
+	python client/main.py ${server}
 
 testing:
 	pytest test -v

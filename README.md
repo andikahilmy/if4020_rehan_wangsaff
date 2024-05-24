@@ -10,5 +10,5 @@ Python
 Python
 
 # Run
-make port=3000 server=3001 run-client
+make server=9999 run-client
 make port=9999 run-server

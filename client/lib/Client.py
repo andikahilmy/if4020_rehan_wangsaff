@@ -4,7 +4,8 @@ from .Database import Database
 from .E2EE import E2EE
 from .ALS import ALS
 import hashlib
-
+import threading
+import asyncio
 class RegisterDialog(simpledialog.Dialog):
     def body(self, master):
         self.title("Pendaftaran Akun")
@@ -47,7 +48,7 @@ class LoginDialog(simpledialog.Dialog):
         self.password = self.entry_password.get()
 
 class KeyDialog(tk.Toplevel):
-    def __init__(self, parent, public_key, private_key,ds_public_key,ds_private_key,user_name):
+    def __init__(self, parent, public_key, private_key,ds_public_key,ds_private_key,user_name,port):
         super().__init__(parent)
         self.title("Informasi Kunci")
         self.geometry("400x200")
@@ -67,6 +68,8 @@ class KeyDialog(tk.Toplevel):
 
         self.public_key = public_key
         self.private_key = private_key
+
+        self.port = port
 
         # Digital Signature Key
         ds_frame = tk.Frame(self, relief=tk.GROOVE,bd=2)
@@ -91,7 +94,7 @@ class KeyDialog(tk.Toplevel):
     def download_public_key(self):
         try:
             with open(f"keys/{self.user_name}.ecpub", "x") as f:
-                f.write(f"{self.user_name}::{self.public_key}")
+                f.write(f"{self.user_name}::{self.port}::{self.public_key}")
         except FileExistsError:
             tk.messagebox.showwarning("File Sudah Ada", f"Kunci sudah ada di  [keys/{self.user_name}.ecpub] ", icon='warning')
         else:
@@ -100,7 +103,7 @@ class KeyDialog(tk.Toplevel):
     def download_private_key(self):
         try:
             with open(f"keys/{self.user_name}.ecprv", "x") as f:
-                f.write(f"{self.user_name}::{self.private_key}")
+                f.write(f"{self.user_name}::{self.port}::{self.private_key}")
         except FileExistsError:
             tk.messagebox.showwarning("File Sudah Ada", f"Kunci sudah ada di  [keys/{self.user_name}.ecprv] ", icon='warning')
         else:
@@ -109,7 +112,7 @@ class KeyDialog(tk.Toplevel):
     def download_ds_public_key(self):
         try:
             with open(f"keys/{self.user_name}.scpub", "x") as f:
-                f.write(f"{self.user_name}::{self.ds_public_key}")
+                f.write(f"{self.user_name}::{self.port}::{self.ds_public_key}")
         except FileExistsError:
             tk.messagebox.showwarning("File Sudah Ada", f"Kunci sudah ada di  [keys/{self.user_name}.scpub] ", icon='warning')
         else:
@@ -118,14 +121,14 @@ class KeyDialog(tk.Toplevel):
     def download_ds_private_key(self):
         try:
             with open(f"keys/{self.user_name}.scprv", "x") as f:
-                f.write(f"{self.user_name}::{self.ds_private_key}")
+                f.write(f"{self.user_name}::{self.port}::{self.ds_private_key}")
         except FileExistsError:
             tk.messagebox.showwarning("File Sudah Ada", f"Kunci sudah ada di  [keys/{self.user_name}.scprv] ", icon='warning')
         else:
             tk.messagebox.showinfo("Pengunduhan Sukses", f"Kunci berhasil disimpan di [keys/{self.user_name}.scprv]")
 
 class Client(tk.Tk):
-    def __init__(self,port:int,server_port:int):
+    def __init__(self,server_port:int):
         super().__init__()
 
         # Atur window
@@ -135,11 +138,8 @@ class Client(tk.Tk):
         self.grid_rowconfigure(0, weight=1)
         self.grid_columnconfigure(0, weight=1)
 
-        self.als = ALS(port,server_port)
-        self.als.init_connection()
-
         self.start_page = StartPage(self)
-        self.chat_page = ChatPage(self,port,server_port)
+        self.chat_page = ChatPage(self,server_port)
 
         self.show_page(self.start_page)
 
@@ -210,6 +210,9 @@ class StartPage(tk.Frame):
         self.login_button.grid(row=0, column=1)
 
     def open_chat(self):
+        # Kalau belum kekonek jangan buka
+        if not self.master.chat_page.port:
+            tk.messagebox.showerror("Error", "Cannot contact server!")
         # Bikin dialog konfirmasi "Apakah kunci yang Anda masukkan sudah benar?"
         confirm = tk.messagebox.askyesno("Konfirmasi", "Apakah kunci yang Anda masukkan sudah benar?")
         if not confirm:
@@ -222,9 +225,12 @@ class StartPage(tk.Frame):
             tk.messagebox.showerror("Error", "Kunci Publik dan Privat Harus Diisi!")
             return
         # init chat
-        self.master.chat_page.init_chat(public_key,private_key)
-        # Buka chat window
-        self.master.show_page(self.master.chat_page)
+        try:
+            self.master.chat_page.init_chat(public_key,private_key)
+            # Buka chat window
+            self.master.show_page(self.master.chat_page)
+        except ValueError as e:
+            tk.messagebox.showerror("Error", str(e))
 
     def register_user(self):
         dialog = RegisterDialog(self)
@@ -238,13 +244,16 @@ class StartPage(tk.Frame):
             tk.messagebox.showerror("Error", "Semua Kolom Harus Diisi!")
 
     def login(self):
+        # Block kalau belum kekonek
+        if not self.master.chat_page.port:
+            tk.messagebox.showerror("Error", "Cannot contact server!")
         dialog = LoginDialog(self)
         # cari user
         user = Database.search_user_by_credential(dialog.username, dialog.password)
         if user:
             # Bikin dialog yang menampilkan kunci pengguna beserta tombol untuk mengunduh kunci
             # TODO kunci buat digital signature
-            KeyDialog(self, user[3], user[4], "", "", user[1])
+            KeyDialog(self, user[3], user[4], "", "", user[1],self.master.chat_page.port)
         else:
             tk.messagebox.showerror("Error", "Username atau kata sandi salah!")
 
@@ -263,10 +272,11 @@ class StartPage(tk.Frame):
             self.private_entry.insert(0, f.read())
 
 class ChatPage(tk.Frame):
-    def __init__(self, parent, port: int,server_port:int):
+    def __init__(self, parent, server_port:int):
         super().__init__(parent)
-        self.port = port
         self.server_port = server_port
+        # Init koneksi
+        self.init_connection()
         # grid semua elemen
         self.grid(row=0, column=0, sticky='nsew')
         # Buat chat screen
@@ -310,28 +320,52 @@ class ChatPage(tk.Frame):
         tk.Button(input_frame, text="Send", command=self.send_message).grid(row=0, column=1, padx=5, pady=5)
         tk.Button(input_frame, text="Sign and Send", command=self.send_message).grid(row=0, column=2, padx=5, pady=5)
 
+    def init_connection(self)->None:
+        # Buat thread untuk handle koneksi
+        threading.Thread(target=self._start_connection,daemon=True).start()
+
+    def _start_connection(self)->None:
+        # Jalankan fungsi handler koneksi secara asynchronous
+        asyncio.run(self._async_handle_connection())
+
+    async def _async_handle_connection(self)->None:
+        self.als = ALS(self.server_port,self.receive_message_handler)
+        await self.als.init_connection()
+        self.port = self.als.get_port()
+    
+    def receive_message_handler(self,message:str):
+        print("MEssage",message)
 
     def init_chat(self,public_key:str,private_key:str):
         tmp = public_key.split("::")
+        if len(tmp)<3:
+            raise ValueError("Invalid public key format")
         self.chatmate = tmp[0]
-        if len(tmp)<2:
-            self.public_key = tmp[0]
-        else:
-            self.public_key = tmp[1]
+        self.mate_port = int(tmp[1])
+        self.public_key = tmp[2]
         tmp = private_key.split("::")
-        if len(tmp)<2:
-            self.private_key = tmp[0]
-        else:
-            self.private_key = tmp[1]
+        if len(tmp)<3:
+            raise ValueError("Invalid private key format")
+        self.private_key = tmp[1]
 
     def send_message(self):
+        if self.port:
+            # Bikin thread untuk kirim pesan
+            threading.Thread(target=self._send_message,daemon=True).start()
+
+    def _send_message(self):
+        # Kirim secara asynchronous
+        asyncio.run(self._async_send_message())
+    
+    async def _async_send_message(self):
         message = self.message_entry.get()
+        print(message)
         if message:
             # Simpan ke database
             e2ee_encrypted_message = E2EE.encrypt(message.encode(),self.public_key)
             Database.add_message(self.port,e2ee_encrypted_message)
             # Kirim pesan
-            self.master.als.send(e2ee_encrypted_message)
+            await self.als.send(e2ee_encrypted_message)
             # Cetak Pesan
             self.chat_display.config(state='normal')
             self.chat_display.insert(tk.END, f"You: {message}\n")
