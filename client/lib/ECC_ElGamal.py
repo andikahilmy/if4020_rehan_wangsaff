@@ -10,9 +10,9 @@ def generate_publickey(private_key:int)->Point:
   return  SECP256R1.get_basepoint() * private_key
 
 def generate_privatekey()->int:
-  private_key = secrets.randbelow(SECP256R1.n)
+  private_key = secrets.randbelow(SECP256R1.p)
   while private_key == 0:
-    private_key =  secrets.randbelow(SECP256R1.n)
+    private_key =  secrets.randbelow(SECP256R1.p)
   return private_key
 
 def encode_point(plaintext:bytes)->Point: 
@@ -41,9 +41,9 @@ def decode_point(ciphertext:Point)->bytes:
 
 def encrypt(plaintext:bytes,public_key:Point):
   P_M:Point = encode_point(plaintext)
-  k = secrets.randbelow(SECP256R1.n)
+  k = secrets.randbelow(SECP256R1.p)
   while k == 0:
-    k =  secrets.randbelow(SECP256R1.n)
+    k =  secrets.randbelow(SECP256R1.p)
   c1 = SECP256R1.get_basepoint()* k
   c2 = P_M + public_key * k
   return (c1,c2)
