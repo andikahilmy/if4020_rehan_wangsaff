@@ -1,34 +1,57 @@
 import asyncio
 import websockets
+import json
 class ALS():
-  def __init__(self,server_port:int,on_message_received) -> None:
+  def __init__(self,server_port:int,on_message_received,queue:asyncio.Queue) -> None:
     self.uri = f"ws://localhost:{server_port}/messaging"
     self.websocket = None
     self.receive_task = None
     self.on_message_received = on_message_received
+    self.queue = queue
 
-  async def init_connection(self)->None:
+  async def start_connection(self)->None:
     # Init websocket
-    self.websocket = await websockets.connect(self.uri)
+    self.websocket = await websockets.connect(self.uri,ping_interval=None)
     print(f"Connected to {self.uri} from local port {self.get_port()}")
-    # Buat thread untuk menerima pesan
-    self.receive_task = asyncio.create_task(self.receive())
+    # Buat task untuk kirim pesan
+    # asyncio.create_task(self._send())
+    # Buat thread untuk mengirim pesan
+    self.receive_task = asyncio.create_task(self._send())
     #TODO algoritma buat ALS handshake
+    print("kena")
+    #TODO handle penerimaan pesan
+    while True:
+      try:
+        message = await self.websocket.recv()
+        print("Receive",message)
+        self.process_message(message)
+      except websockets.ConnectionClosed:
+        print("Connection closed")
 
-  async def send(self,message:str)->None:
+  async def _send(self)->None:
     #TODO enkripsi ALS
     # Kirim pesan
-    if self.websocket:
+    while True:
+      message = await self.queue.get()
       await self.websocket.send(message)
-    print(f"Sending {message} to {self.server_port}")
+      print(f"Sending {message} to {self.server_port}")
 
-  async def receive(self)->None:
-    try:
-      async for message in self.websocket:
-        print(f"Received: {message}")
-        self.process_message(message)
-    except websockets.ConnectionClosed:
-      print("WebSocket connection closed.")
+
+  #Interface untuk kirim pesan
+  async def send(self,message:str)->None:
+    await self.queue.put(message)
+
+  # async def receive(self)->None:
+  #   try:
+  #     print("mamoru")
+  #     async for message in self.websocket:
+  #       print(f"Received: {message}")
+  #       self.process_message(message)
+  #   except websockets.ConnectionClosed:
+  #     print("WebSocket connection closed.")
+  #   except Exception as e:
+  #     print(f"Error in receiving messages: {e}")
+
 
   def get_port(self)->int|None:
     if self.websocket:
@@ -36,7 +59,22 @@ class ALS():
     return None
 
   def process_message(self,message:str)->None:
-    self.on_message_received(message)
+    #TODO dekripsi ALS
+    data = message
+    #Parse json
+    if data=='Connection Established':
+      self.on_message_received(data)
+      return
+    try:
+      print("datum",data)
+      message_from_json = json.loads(data)['message']
+    except json.JSONDecodeError:
+      print("Failed to parse JSON")
+      return
+    except KeyError:
+      print("Invalid JSON format")
+      return
+    self.on_message_received(message_from_json)
 
   async def close_connection(self)->None:
     # Tutup koneksi
@@ -50,4 +88,3 @@ class ALS():
         await self.receive_task
       except asyncio.CancelledError:
         print("Receive task cancelled.")
-

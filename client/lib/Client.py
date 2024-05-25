@@ -322,16 +322,24 @@ class ChatPage(tk.Frame):
 
     def init_connection(self)->None:
         # Buat thread untuk handle koneksi
-        threading.Thread(target=self._start_connection,daemon=True).start()
+        self.async_loop = asyncio.new_event_loop()
+        self.queue = asyncio.Queue()
+        threading.Thread(target=self._start_connection).start()
 
     def _start_connection(self)->None:
         # Jalankan fungsi handler koneksi secara asynchronous
-        asyncio.run(self._async_handle_connection())
+        asyncio.set_event_loop(self.async_loop)
+        self.async_loop.create_task(self._async_handle_connection())
+        self.async_loop.run_forever()
+        # asyncio.run(self._async_handle_connection())
 
     async def _async_handle_connection(self)->None:
-        self.als = ALS(self.server_port,self.receive_message_handler)
-        await self.als.init_connection()
+        self.als = ALS(self.server_port,self.receive_message_handler,self.queue)
+        await self.als.start_connection()
+        print("kena")
         self.port = self.als.get_port()
+        print(self.port)
+        self.master.title(f"(Wangsaff ©)@{self.port}")
     
     def receive_message_handler(self,message:str):
         print("MEssage",message)
@@ -365,7 +373,9 @@ class ChatPage(tk.Frame):
             e2ee_encrypted_message = E2EE.encrypt(message.encode(),self.public_key)
             Database.add_message(self.port,e2ee_encrypted_message)
             # Kirim pesan
-            await self.als.send(e2ee_encrypted_message)
+            asyncio.run_coroutine_threadsafe(self.als.send(e2ee_encrypted_message), self.async_loop)
+            # asyncio.run_coroutine_threadsafe(messagesender(msg), async_loop)
+            # await self.als.send(e2ee_encrypted_message)
             # Cetak Pesan
             self.chat_display.config(state='normal')
             self.chat_display.insert(tk.END, f"You: {message}\n")
