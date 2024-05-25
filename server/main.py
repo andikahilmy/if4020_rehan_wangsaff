@@ -25,18 +25,20 @@ async def messaging(ws:WebSocket):
   logger.info(f"Received connection from {ws.client.host}:{ws.client.port}")
   try:
     #TODO handshake
-    data = await ws.receive_text()
+    # data = await ws.receive_text()
     #TODO Handshake
     shared_key = ""
     manager.connect(ws,shared_key)
     # Konfirmasi handshake
-    await ws.send_text("Connection Established")
+    print("kirim")
+    await manager.send_message(ws.client.port,"Connection Established")
+    print("1")
   except WebSocketDisconnect:
     logger.info(f"Client {ws} disconnected")
 
   # Komunikasi
-  try:
-    while True:
+  while True:
+    try:
       data = await ws.receive_text()
       #TODO decrypt data dari ALS
       # Parse ke json
@@ -55,10 +57,11 @@ async def messaging(ws:WebSocket):
         await ws.send_text("Message sent")
       else:
         await ws.send_text("Failed to send message")
-  except WebSocketDisconnect:
-    logger.info(f"Client {ws} disconnected")
-  except json.JSONDecodeError:
-    logger.error("Invalid JSON format")
+    except WebSocketDisconnect:
+      logger.info(f"Client {ws} disconnected")
+      break
+    except json.JSONDecodeError:
+      logger.error("Invalid JSON format")
 
 @app.get("/digital-signature-param")
 # buat dapatin global variabel digital signature
