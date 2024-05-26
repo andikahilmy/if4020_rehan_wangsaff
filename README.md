@@ -22,6 +22,7 @@ Contoh:
 Dengan `PORT` adalah nomor `Port server` yang dituju.
 
 # Cara Menggunakan
+0. Tambahkan folder `keys` di root project jika belum ada.
 1. Jalankan Klien 1
 2. Tekan tombol `Daftar` untuk mendaftarakan klien 1
 ![klien 1](res/images/ss-01.JPG)
@@ -50,4 +51,4 @@ Dengan `PORT` adalah nomor `Port server` yang dituju.
 15. Tekan tombol `Lihat Signature` untuk melihat tanda tangan dan tombol `Verify Signature` Untuk memeriksa tanda tangan.
 
 # Keterangan Tambahan 
-Karena keterbatasan implementasi Eliptic Curve pada program ini, program hanya dapat mengirim/menerima pesan maksimal __27__ karakter unicode. Lewat dari itu maka program akan hang.
+* Karena keterbatasan implementasi Eliptic Curve pada program ini, program hanya dapat mengirim/menerima pesan maksimal __27__ karakter unicode. Lewat dari itu maka program akan hang.
