@@ -9,7 +9,6 @@ class Cipher:
 
     def __init__(self, key: bytes, mode: str) -> None:
         self.key = key
-        print("KEYS",key)
         self.subkeys = self.generate_key()
         self.mode = mode
 

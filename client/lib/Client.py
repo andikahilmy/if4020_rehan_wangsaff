@@ -339,24 +339,12 @@ class ChatPage(tk.Frame):
 
     async def _async_handle_connection(self)->None:
         self.als = ALS(self.server_port,self.receive_message_handler,self.queue)
-        print("aku")
         await self.als.start_connection()
-        print("kena")
-        # await self.als.connected_event.wait()
-        print("Ass")
-        print("port",self.als.get_port())
         self.port = self.als.get_port()
-        print("a")
-        print(self.port)
         self.master.title(f"(Wangsaff ©)@{self.port}")
     
     def receive_message_handler(self,encrypted_message:str):
-        print("MEssage",encrypted_message)
-        # if encrypted_message['message'] in ['Connection Established','Message sent','Failed to send message'] or encrypted_message['message'].startswith("Failed to send message:"):
-        #     return
-        # decrypt_data
         message = E2EE.decrypt(encrypted_message,self.private_key)
-        print("dec message",message)
         # Tampilin di layar
         self.chat_display.tag_configure('tag-them', justify=tk.LEFT,foreground='green')
         self.chat_display.config(state='normal')
@@ -399,7 +387,6 @@ class ChatPage(tk.Frame):
     
     async def _async_send_message(self):
         message = self.message_entry.get()
-        print(message)
         if message:
             # Simpan ke database
             e2ee_encrypted_message = E2EE.encrypt(message.encode(),self.public_key)

@@ -13,10 +13,7 @@ class ClientManager():
 
   async def send_message(self,dst_port,message:str)->bool:
     try:
-      print("message",message)
-      print(dst_port,self.CONNECTIONS)
       await self.CONNECTIONS[dst_port][0].send_text(message)
-      print("11")
       return True
     except KeyError:
       self.logger.error("Client not found")
