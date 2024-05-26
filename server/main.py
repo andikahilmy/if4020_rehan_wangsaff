@@ -2,6 +2,10 @@ from fastapi import FastAPI,WebSocket,WebSocketDisconnect
 import json
 from .lib.ClientManager import ClientManager
 import logging
+from cryptography.hazmat.primitives.asymmetric import ec
+from cryptography.hazmat.primitives import serialization
+
+from lib.Cipher import Cipher
 
 
 # Setting Logging
@@ -11,6 +15,12 @@ logger.setLevel(logging.DEBUG)
 CONNECTIONS = {}
 manager = ClientManager()
 app = FastAPI()
+
+private_key = ec.generate_private_key(ec.SECP384R1())
+public_key = private_key.public_key().public_bytes(
+  encoding=serialization.Encoding.PEM,
+  format=serialization.PublicFormat.SubjectPublicKeyInfo
+).decode()
 
 @app.get('/')
 async def root():
@@ -24,11 +34,16 @@ async def messaging(ws:WebSocket):
   await ws.accept()
   logger.info(f"Received connection from {ws.client.host}:{ws.client.port}")
   try:
-    #TODO handshake
-    # data = await ws.receive_text()
-    #TODO Handshake
-    shared_key = ""
-    manager.connect(ws,shared_key)
+    client_public_key = await ws.receive_text()
+    client_public_key = serialization.load_pem_public_key(client_public_key.encode())
+    
+    await ws.send_text(public_key)
+
+    shared_key = private_key.exchange(ec.ECDH(),client_public_key)
+    cipher = Cipher(client_public_key,'ctr')
+    key = cipher.encrypt(shared_key)
+
+    manager.connect(ws,key)
     # Konfirmasi handshake
     print("kirim")
     await manager.send_message(ws.client.port,"Connection Established")
@@ -41,9 +56,15 @@ async def messaging(ws:WebSocket):
     encrypted_message = ""
     try:
       data = await ws.receive_text()
-      #TODO decrypt data dari ALS
+      
+      # decrypt data
+      sender_shared_key = manager.CONNECTIONS[ws.client.port][1]
+      cipher = Cipher(sender_shared_key,'ctr')
+      decrypted_data = cipher.decrypt(data)
+      del cipher
+
       # Parse ke json
-      message = json.loads(data)
+      message = json.loads(decrypted_data)
       # Format pesan
       #{
       #  "src_port": "int",
@@ -51,8 +72,12 @@ async def messaging(ws:WebSocket):
       #  "message": "str"
       #}
       logger.info(f"Received message from {ws}")
-      #TODO encrypt data ke ALS
-      encrypted_message = data
+      # encrypt data ke ALS
+      receiver_shared_key = manager.CONNECTIONS[message['dst_port']][1]
+      cipher = Cipher(receiver_shared_key,'ctr')
+      encrypted_message = cipher.encrypt(json.dumps(message))
+      del cipher 
+      
       is_success = await manager.send_message(message['dst_port'],encrypted_message)
       if is_success:
         await ws.send_text("Message sent")
