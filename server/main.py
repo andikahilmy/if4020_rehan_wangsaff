@@ -47,11 +47,13 @@ async def messaging(ws:WebSocket):
       format=serialization.PublicFormat.SubjectPublicKeyInfo
     )
 
-    cipher = Cipher(public_key_bytes[:16],'ctr')
-    key = cipher.encrypt(shared_key)[:16]
+    # cipher = Cipher(public_key_bytes[:16],'ctr')
+    # key = cipher.encrypt(shared_key)[:16]
+    key = shared_key[:16]
 
     manager.connect(ws,key)
     # manager.connect(ws,"")
+    print("shared key",key)
     # Konfirmasi handshake
     print("kirim")
     # await manager.send_message(ws.client.port,"Connection Established")
@@ -71,6 +73,7 @@ async def messaging(ws:WebSocket):
       sender_shared_key = manager.CONNECTIONS[ws.client.port][1]
       cipher = Cipher(sender_shared_key,'ctr')
       print("recv data",data)
+      print("KEYS",cipher.key)
       decrypted_data = cipher.decrypt(data).decode()
       print("decryp recv data s",decrypted_data)
       del cipher
@@ -89,7 +92,7 @@ async def messaging(ws:WebSocket):
       # encrypt data ke ALS
       receiver_shared_key = manager.CONNECTIONS[message['dst_port']][1]
       cipher = Cipher(receiver_shared_key,'ctr')
-      encrypted_message = base64.b64encode(cipher.encrypt(json.dumps(message))).decode()
+      encrypted_message = base64.b64encode(cipher.encrypt(json.dumps(message).encode())).decode()
       print("enc msg",encrypted_message)
       del cipher 
       # encrypted_message = json.dumps(message)

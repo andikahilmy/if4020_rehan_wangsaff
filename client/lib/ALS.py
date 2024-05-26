@@ -54,6 +54,7 @@ class ALS():
       message = await self.queue.get()
       # print("msgg",message,type("message"))
       encrypted_message = base64.b64encode(self.__cipher.encrypt(message)).decode()
+      print("KEY",self.__cipher.key)
       # encrypted_message = message
       await self.websocket.send(encrypted_message)
       print(f"Sending {encrypted_message} to {self.server_port}")
@@ -140,8 +141,9 @@ class ALS():
       while len(public_key_bytes)<16:
         public_key_bytes += ctr.to_bytes(1,'big')
         ctr+=1
-    print("pl",public_key_bytes[:16])
-    key_derivation_cipher = Cipher(public_key_bytes[:16], 'ctr')
-    self.__key = key_derivation_cipher.encrypt(shared_key)[:16]
+    # print("pl",public_key_bytes[:16])
+    # key_derivation_cipher = Cipher(public_key_bytes[:16], 'ctr')
+    # self.__key = key_derivation_cipher.encrypt(shared_key)[:16]
+    self.__key = shared_key[:16]
     print("Shared key:",self.__key)
     self.__cipher = Cipher(self.__key, 'ctr')
