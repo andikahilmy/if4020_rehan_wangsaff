@@ -1,4 +1,5 @@
 from fastapi import FastAPI,WebSocket,WebSocketDisconnect
+from fastapi.responses import JSONResponse
 import json
 from .lib.ClientManager import ClientManager
 import logging
@@ -8,7 +9,8 @@ from cryptography.hazmat.primitives import serialization
 from lib.Cipher import Cipher
 import base64
 import secrets
-import math
+import time
+import sympy
 
 
 # Setting Logging
@@ -116,16 +118,36 @@ async def messaging(ws:WebSocket):
 # buat dapatin global variabel digital signature pake skema schnorr
 async def digital_signature_param():
   # Bangkitkan nilai p dan q
-  p = secrets.randbits(1024)
-  q = secrets.randbits(128)
-  pq_criteria = p > q and p % q == 1
-  while not pq_criteria:
-    p = secrets.randbits(1024)
-    q = secrets.randbits(128)
-    pq_criteria = p > q and p % q == 1
-  # Bangkitkan nilai a
-  a = secrets.randbelow(p-1) + 1
-  a_criteria = pow(a, q, p) == 1
-  while not a_criteria:
+  start_time = time.time()
+  found_value = False
+  while time.time() - start_time < 10 and not found_value:
+    logger.info("Generating p and q...")
+    attempt = 1
+    logger.info(f"Attempt {attempt} to find p and q")
+    # q = sympy.randprime(2**159, 2**160) 
+    # p = sympy.randprime(2**1023, 2**1024)
+    q = sympy.randprime(2**7, 2**8) 
+    p = q * secrets.randbits(8) + 1
+    pq_criteria = p > q and p % q == 1 and sympy.isprime(p) and sympy.isprime(q)
+    while not pq_criteria:
+      attempt += 1
+      logger.info(f"Attempt {attempt} to find p and q")
+      p = q * secrets.randbits(8) + 1
+      pq_criteria = p > q and p % q == 1 and sympy.isprime(p) and sympy.isprime(q)
+    logger.info(f"Found p: {p}")
+    logger.info(f"Found q: {q}")
+    # Bangkitkan nilai a
+    logger.info("Generating a")
+    attempt = 1
+    logger.info(f"Attempt {attempt} to find a")
     a = secrets.randbelow(p-1) + 1
     a_criteria = pow(a, q, p) == 1
+    while not a_criteria:
+      attempt += 1
+      logger.info(f"Attempt {attempt} to find a")
+      a = secrets.randbelow(p-1) + 1
+      a_criteria = pow(a, q, p) == 1
+    logger.info(f"Found a: {a} after {attempt} attempts")
+    response = {"a": a, "p": p, "q": q}
+    found_value = True
+  return JSONResponse(content=response)

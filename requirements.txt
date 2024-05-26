@@ -11,3 +11,4 @@ logging
 cryptography
 fastapi
 numpy
+sympy
