@@ -79,6 +79,7 @@ class ALS():
       message_from_json = json.loads(data)['message']
     except json.JSONDecodeError:
       print("Failed to parse JSON")
+      print("Data:",data)
       return
     except KeyError:
       print("Invalid JSON format")

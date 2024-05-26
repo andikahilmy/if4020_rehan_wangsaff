@@ -348,8 +348,29 @@ class ChatPage(tk.Frame):
         print(self.port)
         self.master.title(f"(Wangsaff ©)@{self.port}")
     
-    def receive_message_handler(self,message:str):
-        print("MEssage",message)
+    def receive_message_handler(self,encrypted_message:str):
+        print("MEssage",encrypted_message)
+        if encrypted_message['message'] in ['Connection Established','Message sent','Failed to send message'] or encrypted_message['message'].startswith("Failed to send message:"):
+            return
+        # decrypt_data
+        message = E2EE.decrypt(encrypted_message['message'],self.private_key)
+        print("dec message",message)
+        # Tampilin di layar
+        self.chat_display.tag_configure('tag-them', justify=tk.RIGHT)
+        self.chat_display.config(state='normal')
+        self.chat_display.insert(tk.END, f"{self.chatmate}: {message}\n",'tag-them')
+        # Tombol buat melihat dan verifikasi signature
+        view_button = tk.Button(self.chat_display, text="Lihat Signature", command=self.view_signature)
+        verify_button = tk.Button(self.chat_display, text="Verifikasi Signature", command=self.verify_signature)
+
+        # Tambahkan tombol ke display
+        self.chat_display.window_create(tk.END, window=view_button,align=tk.RIGHT)
+        self.chat_display.window_create(tk.END, window=verify_button,align=tk.RIGHT)
+        self.chat_display.insert(tk.END, "\n")
+
+        # Hapus teks di message box
+        self.chat_display.config(state='disabled')
+        self.message_entry.delete(0, tk.END)
 
     def init_chat(self,public_key:str,private_key:str):
         tmp = public_key.split("::")
@@ -390,8 +411,9 @@ class ChatPage(tk.Frame):
             # asyncio.run_coroutine_threadsafe(messagesender(msg), async_loop)
             # await self.als.send(e2ee_encrypted_message)
             # Cetak Pesan
+            self.chat_display.tag_configure('tag-us', justify=tk.LEFT)
             self.chat_display.config(state='normal')
-            self.chat_display.insert(tk.END, f"You: {message}\n")
+            self.chat_display.insert(tk.END, f"You: {message}\n",'tag-us')
 
             # Tombol buat melihat dan verifikasi signature
             view_button = tk.Button(self.chat_display, text="Lihat Signature", command=self.view_signature)
