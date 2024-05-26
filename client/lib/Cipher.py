@@ -405,6 +405,8 @@ class Cipher:
             # xor with plaintext and append
             ciphertext = np.append(ciphertext, block ^ register)
             self.counter += 1
+        # Reset counter
+        self.counter = self.create_counter()
         return bytes(ciphertext)
 
     def decrypt_in_counter(self, ciphertext: bytes) -> bytes:
@@ -447,6 +449,8 @@ class Cipher:
         if have_padding:
             # remove padding
             plaintext = plaintext[: len(plaintext) - padding_count]
+        # Reset counter
+        self.counter = self.create_counter()
         return bytes(plaintext)
 
     def encrypt(self, plaintext: bytes) -> bytes:
