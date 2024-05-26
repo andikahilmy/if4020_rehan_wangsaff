@@ -3,22 +3,28 @@ import websockets
 import json
 class ALS():
   def __init__(self,server_port:int,on_message_received,queue:asyncio.Queue) -> None:
-    self.uri = f"ws://localhost:{server_port}/messaging"
+    self.server_port = server_port
+    self.uri = f"ws://localhost:{self.server_port}/messaging"
     self.websocket = None
     self.receive_task = None
     self.on_message_received = on_message_received
     self.queue = queue
+    self.connected_event = asyncio.Event()
 
   async def start_connection(self)->None:
     # Init websocket
     self.websocket = await websockets.connect(self.uri,ping_interval=None)
     print(f"Connected to {self.uri} from local port {self.get_port()}")
+    self.connected_event.set()
     # Buat task untuk kirim pesan
     # asyncio.create_task(self._send())
     # Buat thread untuk mengirim pesan
-    self.receive_task = asyncio.create_task(self._send())
+    self.receive_task = asyncio.create_task(self._receive())
+    asyncio.create_task(self._send())
     #TODO algoritma buat ALS handshake
     print("kena")
+
+  async def _receive(self)->None:
     #TODO handle penerimaan pesan
     while True:
       try:
@@ -54,6 +60,9 @@ class ALS():
 
 
   def get_port(self)->int|None:
+    print("socket")
+    print(self.websocket.local_address)
+    print("as")
     if self.websocket:
       return self.websocket.local_address[1]
     return None

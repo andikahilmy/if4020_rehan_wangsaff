@@ -38,6 +38,7 @@ async def messaging(ws:WebSocket):
 
   # Komunikasi
   while True:
+    encrypted_message = ""
     try:
       data = await ws.receive_text()
       #TODO decrypt data dari ALS
@@ -62,6 +63,7 @@ async def messaging(ws:WebSocket):
       break
     except json.JSONDecodeError:
       logger.error("Invalid JSON format")
+      await ws.send_text(f"Failed to send message: {encrypted_message}")
 
 @app.get("/digital-signature-param")
 # buat dapatin global variabel digital signature

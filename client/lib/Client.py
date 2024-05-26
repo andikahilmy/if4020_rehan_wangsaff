@@ -329,15 +329,21 @@ class ChatPage(tk.Frame):
     def _start_connection(self)->None:
         # Jalankan fungsi handler koneksi secara asynchronous
         asyncio.set_event_loop(self.async_loop)
+        # self.async_loop.run_until_complete(self._async_handle_connection())
         self.async_loop.create_task(self._async_handle_connection())
         self.async_loop.run_forever()
         # asyncio.run(self._async_handle_connection())
 
     async def _async_handle_connection(self)->None:
         self.als = ALS(self.server_port,self.receive_message_handler,self.queue)
+        print("aku")
         await self.als.start_connection()
         print("kena")
+        # await self.als.connected_event.wait()
+        print("Ass")
+        print("port",self.als.get_port())
         self.port = self.als.get_port()
+        print("a")
         print(self.port)
         self.master.title(f"(Wangsaff ©)@{self.port}")
     
