@@ -7,6 +7,8 @@ from cryptography.hazmat.primitives import serialization
 
 from lib.Cipher import Cipher
 import base64
+import secrets
+import math
 
 
 # Setting Logging
@@ -109,6 +111,19 @@ async def messaging(ws:WebSocket):
       print(f"Failed to send message: {encrypted_message}")
 
 @app.get("/digital-signature-param")
-# buat dapatin global variabel digital signature
+# buat dapatin global variabel digital signature pake skema schnorr
 async def digital_signature_param():
-  pass
+  # Bangkitkan nilai p dan q
+  p = secrets.randbits(1024)
+  q = secrets.randbits(128)
+  pq_criteria = p > q and p % q == 1
+  while not pq_criteria:
+    p = secrets.randbits(1024)
+    q = secrets.randbits(128)
+    pq_criteria = p > q and p % q == 1
+  # Bangkitkan nilai a
+  a = secrets.randbelow(p-1) + 1
+  a_criteria = pow(a, q, p) == 1
+  while not a_criteria:
+    a = secrets.randbelow(p-1) + 1
+    a_criteria = pow(a, q, p) == 1
