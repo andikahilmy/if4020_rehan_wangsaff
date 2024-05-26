@@ -12,3 +12,7 @@ Python
 # Run
 make server=9999 run-client
 make port=9999 run-server
+
+
+bermasalah kalo pesan terlalu panjang?
+inpur key kalau keganti ngebug

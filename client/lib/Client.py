@@ -263,6 +263,7 @@ class StartPage(tk.Frame):
         if not file_path:
             return 
         with open(file_path, "r") as f:
+            self.public_entry.delete(0, tk.END)
             self.public_entry.insert(0, f.read())
 
     def select_private_key(self):
@@ -270,6 +271,7 @@ class StartPage(tk.Frame):
         if not file_path:
             return
         with open(file_path, "r") as f:
+            self.public_entry.delete(0, tk.END)
             self.private_entry.insert(0, f.read())
 
 class ChatPage(tk.Frame):
@@ -325,7 +327,7 @@ class ChatPage(tk.Frame):
         # Buat thread untuk handle koneksi
         self.async_loop = asyncio.new_event_loop()
         self.queue = asyncio.Queue()
-        threading.Thread(target=self._start_connection).start()
+        threading.Thread(target=self._start_connection,daemon=True).start()
 
     def _start_connection(self)->None:
         # Jalankan fungsi handler koneksi secara asynchronous
@@ -356,7 +358,7 @@ class ChatPage(tk.Frame):
         message = E2EE.decrypt(encrypted_message,self.private_key)
         print("dec message",message)
         # Tampilin di layar
-        self.chat_display.tag_configure('tag-them', justify=tk.RIGHT)
+        self.chat_display.tag_configure('tag-them', justify=tk.LEFT,foreground='green')
         self.chat_display.config(state='normal')
         self.chat_display.insert(tk.END, f"{self.chatmate}: {message}\n",'tag-them')
         # Tombol buat melihat dan verifikasi signature
@@ -364,8 +366,9 @@ class ChatPage(tk.Frame):
         verify_button = tk.Button(self.chat_display, text="Verifikasi Signature", command=self.verify_signature)
 
         # Tambahkan tombol ke display
-        self.chat_display.window_create(tk.END, window=view_button,align=tk.RIGHT)
-        self.chat_display.window_create(tk.END, window=verify_button,align=tk.RIGHT)
+        self.chat_display.window_create(tk.END, window=view_button)
+        self.chat_display.insert(tk.END, " ")
+        self.chat_display.window_create(tk.END, window=verify_button)
         self.chat_display.insert(tk.END, "\n")
 
         # Hapus teks di message box
@@ -380,6 +383,7 @@ class ChatPage(tk.Frame):
         self.mate_port = int(tmp[1])
         self.public_key = tmp[2]
         tmp = private_key.split("::")
+        self.my_name = tmp[0]
         if len(tmp)<3:
             raise ValueError("Invalid private key format")
         self.private_key = int(tmp[2])
@@ -410,18 +414,27 @@ class ChatPage(tk.Frame):
             asyncio.run_coroutine_threadsafe(self.als.send(json.dumps(payload)), self.async_loop)
             # asyncio.run_coroutine_threadsafe(messagesender(msg), async_loop)
             # await self.als.send(e2ee_encrypted_message)
+            # Create a frame to hold the buttons
+            button_frame = tk.Frame(self.chat_display)
             # Cetak Pesan
-            self.chat_display.tag_configure('tag-us', justify=tk.LEFT)
+            self.chat_display.tag_configure('tag-us', justify=tk.LEFT,foreground='blue')
             self.chat_display.config(state='normal')
-            self.chat_display.insert(tk.END, f"You: {message}\n",'tag-us')
+            self.chat_display.insert(tk.END, f"{self.my_name} (You): {message}\n",'tag-us')
 
             # Tombol buat melihat dan verifikasi signature
-            view_button = tk.Button(self.chat_display, text="Lihat Signature", command=self.view_signature)
-            verify_button = tk.Button(self.chat_display, text="Verifikasi Signature", command=self.verify_signature)
+            # view_button = tk.Button(self.chat_display, text="Lihat Signature", command=self.view_signature)
+            # verify_button = tk.Button(self.chat_display, text="Verifikasi Signature", command=self.verify_signature)
+            view_button = tk.Button(button_frame, text="Lihat Signature", command=self.view_signature)
+            verify_button = tk.Button(button_frame, text="Verifikasi Signature", command=self.verify_signature)
 
             # Tambahkan tombol ke display
-            self.chat_display.window_create(tk.END, window=view_button)
-            self.chat_display.window_create(tk.END, window=verify_button)
+            # self.chat_display.window_create(tk.END, window=view_button)
+            # self.chat_display.insert(tk.END, " ")
+            # self.chat_display.window_create(tk.END, window=verify_button)
+            # Pack the buttons into the frame
+            view_button.pack(side=tk.LEFT, padx=(5, 0))
+            verify_button.pack(side=tk.LEFT, padx=(5, 0))
+            self.chat_display.window_create(tk.END, window=button_frame)
             self.chat_display.insert(tk.END, "\n")
 
             # Hapus teks di message box

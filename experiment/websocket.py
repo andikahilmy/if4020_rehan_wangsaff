@@ -48,7 +48,7 @@ def logger(reason, message):
 
 def start_connection():
     # Starte Websocket Verbindung
-    threading.Thread(target=_asyncio_thread).start()
+    threading.Thread(target=_asyncio_thread,daemon=True).start()
 
 if __name__ == '__main__':
     # Asyncio

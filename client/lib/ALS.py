@@ -22,7 +22,6 @@ class ALS():
       format=serialization.PublicFormat.SubjectPublicKeyInfo
     )
     self.__key = None
-    self.__cipher = Cipher(self.__key, 'ctr')
 
   async def start_connection(self)->None:
     # Init websocket
@@ -53,6 +52,7 @@ class ALS():
     while True:
       message = await self.queue.get()
       encrypted_message = self.__cipher.encrypt(message)
+      # encrypted_message = message
       await self.websocket.send(encrypted_message)
       print(f"Sending {message} to {self.server_port}")
 
@@ -91,6 +91,7 @@ class ALS():
       print("datum",data)
       message_from_json = json.loads(data)['message']
       decrypted_message = self.__cipher.decrypt(message_from_json)
+      # decrypted_message = message_from_json
       print("Decrypted message:",decrypted_message)
     except json.JSONDecodeError:
       print("Failed to parse JSON")
@@ -126,4 +127,5 @@ class ALS():
     key_derivation_cipher = Cipher(server_public_key, 'ctr')
     self.__key = key_derivation_cipher.encrypt(shared_key)
     print("Shared key:",self.__key)
+    self.__cipher = Cipher(self.__key, 'ctr')
     return
