@@ -6,6 +6,7 @@ from .ALS import ALS
 import hashlib
 import threading
 import asyncio
+import json
 class RegisterDialog(simpledialog.Dialog):
     def body(self, master):
         self.title("Pendaftaran Akun")
@@ -378,8 +379,14 @@ class ChatPage(tk.Frame):
             # Simpan ke database
             e2ee_encrypted_message = E2EE.encrypt(message.encode(),self.public_key)
             Database.add_message(self.port,e2ee_encrypted_message)
+            # Buat payload
+            payload = {
+                "src_port": self.port,
+                "dst_port": self.mate_port,
+                "message": e2ee_encrypted_message
+            }
             # Kirim pesan
-            asyncio.run_coroutine_threadsafe(self.als.send(e2ee_encrypted_message), self.async_loop)
+            asyncio.run_coroutine_threadsafe(self.als.send(json.dumps(payload)), self.async_loop)
             # asyncio.run_coroutine_threadsafe(messagesender(msg), async_loop)
             # await self.als.send(e2ee_encrypted_message)
             # Cetak Pesan
