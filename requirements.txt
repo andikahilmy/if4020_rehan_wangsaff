@@ -8,3 +8,6 @@ requests
 websockets
 asyncio
 logging
+cryptography
+fastapi
+numpy
