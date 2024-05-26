@@ -6,6 +6,7 @@ from cryptography.hazmat.primitives.asymmetric import ec
 from cryptography.hazmat.primitives import serialization
 
 from lib.Cipher import Cipher
+import base64
 
 
 # Setting Logging
@@ -40,8 +41,14 @@ async def messaging(ws:WebSocket):
     await ws.send_text(public_key)
 
     shared_key = private_key.exchange(ec.ECDH(),client_public_key)
-    cipher = Cipher(client_public_key,'ctr')
-    key = cipher.encrypt(shared_key)
+    
+    public_key_bytes = client_public_key.public_bytes(
+      encoding=serialization.Encoding.PEM,
+      format=serialization.PublicFormat.SubjectPublicKeyInfo
+    )
+
+    cipher = Cipher(public_key_bytes[:16],'ctr')
+    key = cipher.encrypt(shared_key)[:16]
 
     manager.connect(ws,key)
     # manager.connect(ws,"")
@@ -56,14 +63,16 @@ async def messaging(ws:WebSocket):
   while True:
     encrypted_message = ""
     try:
-      data = await ws.receive_text()
+      encoded_data = await ws.receive_text()
+      data = base64.b64decode(encoded_data)
+      
       
       # decrypt data
       sender_shared_key = manager.CONNECTIONS[ws.client.port][1]
       cipher = Cipher(sender_shared_key,'ctr')
       print("recv data",data)
-      decrypted_data = cipher.decrypt(data)
-      print("decryp recv data",decrypted_data)
+      decrypted_data = cipher.decrypt(data).decode()
+      print("decryp recv data s",decrypted_data)
       del cipher
 
       # Parse ke json
@@ -80,7 +89,7 @@ async def messaging(ws:WebSocket):
       # encrypt data ke ALS
       receiver_shared_key = manager.CONNECTIONS[message['dst_port']][1]
       cipher = Cipher(receiver_shared_key,'ctr')
-      encrypted_message = cipher.encrypt(json.dumps(message))
+      encrypted_message = base64.b64encode(cipher.encrypt(json.dumps(message))).decode()
       print("enc msg",encrypted_message)
       del cipher 
       # encrypted_message = json.dumps(message)

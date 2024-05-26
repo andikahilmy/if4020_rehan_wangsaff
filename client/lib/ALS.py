@@ -1,6 +1,7 @@
 import asyncio
 import websockets
 import json
+import base64
 from cryptography.hazmat.primitives.asymmetric import ec
 from cryptography.hazmat.primitives import serialization
 
@@ -51,15 +52,17 @@ class ALS():
     # Kirim pesan
     while True:
       message = await self.queue.get()
-      encrypted_message = self.__cipher.encrypt(message)
+      # print("msgg",message,type("message"))
+      encrypted_message = base64.b64encode(self.__cipher.encrypt(message)).decode()
       # encrypted_message = message
       await self.websocket.send(encrypted_message)
-      print(f"Sending {message} to {self.server_port}")
+      print(f"Sending {encrypted_message} to {self.server_port}")
 
 
   #Interface untuk kirim pesan
   async def send(self,message:str)->None:
-    await self.queue.put(message)
+    print("as",message,type(message))
+    await self.queue.put(message.encode())
 
   # async def receive(self)->None:
   #   try:
@@ -82,12 +85,13 @@ class ALS():
     return None
 
   def process_message(self,message:str)->None:
-    data = message
+    encoded_data = message
     #Parse json
-    if data=='Connection Established':
-      self.on_message_received(data)
+    if encoded_data=='Connection Established':
+      self.on_message_received(encoded_data)
       return
     try:
+      data = base64.b64decode(encoded_data).decode()
       print("datum",data)
       message_from_json = json.loads(data)['message']
       decrypted_message = self.__cipher.decrypt(message_from_json)
@@ -124,8 +128,20 @@ class ALS():
     # Hitung shared key
     shared_key = self.__private_key.exchange(ec.ECDH(),server_public_key)
     # Derive key
-    key_derivation_cipher = Cipher(server_public_key, 'ctr')
-    self.__key = key_derivation_cipher.encrypt(shared_key)
+    # print("key",server_public_key.public_numbers().x)
+    # print("key",server_public_key.public_numbers().y)
+    public_key_bytes = server_public_key.public_bytes(
+      encoding=serialization.Encoding.PEM,
+      format=serialization.PublicFormat.SubjectPublicKeyInfo
+    ).replace(b'-----BEGIN PUBLIC KEY-----\n',b'').replace(b'\n-----END PUBLIC KEY-----\n',b'')
+    if len(public_key_bytes)<16:
+      # Tambahkan ke public_key_bytes sampai panjangnya 16
+      ctr = 0
+      while len(public_key_bytes)<16:
+        public_key_bytes += ctr.to_bytes(1,'big')
+        ctr+=1
+    print("pl",public_key_bytes[:16])
+    key_derivation_cipher = Cipher(public_key_bytes[:16], 'ctr')
+    self.__key = key_derivation_cipher.encrypt(shared_key)[:16]
     print("Shared key:",self.__key)
     self.__cipher = Cipher(self.__key, 'ctr')
-    return
