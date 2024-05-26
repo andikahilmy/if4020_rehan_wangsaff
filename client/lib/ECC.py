@@ -60,9 +60,9 @@ class Point:
                 # xr = m^2 – 2xp
                 # yr = m(xp – xr) – yp
                 # 𝑚=𝑑𝑦/𝑑𝑥=(3𝑥_𝑝^2+𝑎)/(2𝑦_𝑝 )
-                d_y = (3 * (self.x**2) + self.curve.a) % self.curve.p
-                d_x = (2 * self.y) % self.curve.p
-                m = (d_y * pow(d_x, -1, self.curve.p)) % self.curve.p
+                d_y = (3 * (self.x**2) + self.curve.a)
+                d_x = (2 * self.y)
+                m = (d_y * pow(d_x, -1, self.curve.p))
                 x_r = (m**2 - 2 * self.x) % self.curve.p
                 y_r = (m * (self.x - x_r) - self.y) % self.curve.p
                 return Point(x_r, y_r, self.curve)
