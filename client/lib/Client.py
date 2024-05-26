@@ -94,39 +94,39 @@ class KeyDialog(tk.Toplevel):
 
     def download_public_key(self):
         try:
-            with open(f"keys/{self.user_name}.ecpub", "x") as f:
+            with open(f"keys/{self.user_name}-{self.port}.ecpub", "x") as f:
                 f.write(f"{self.user_name}::{self.port}::{self.public_key}")
         except FileExistsError:
-            tk.messagebox.showwarning("File Sudah Ada", f"Kunci sudah ada di  [keys/{self.user_name}.ecpub] ", icon='warning')
+            tk.messagebox.showwarning("File Sudah Ada", f"Kunci sudah ada di  [keys/{self.user_name}-{self.port}.ecpub] ", icon='warning')
         else:
-            tk.messagebox.showinfo("Pengunduhan Sukses", f"Kunci berhasil disimpan di [keys/{self.user_name}.ecpub]")
+            tk.messagebox.showinfo("Pengunduhan Sukses", f"Kunci berhasil disimpan di [keys/{self.user_name}-{self.port}.ecpub]")
 
     def download_private_key(self):
         try:
-            with open(f"keys/{self.user_name}.ecprv", "x") as f:
+            with open(f"keys/{self.user_name}-{self.port}.ecprv", "x") as f:
                 f.write(f"{self.user_name}::{self.port}::{self.private_key}")
         except FileExistsError:
-            tk.messagebox.showwarning("File Sudah Ada", f"Kunci sudah ada di  [keys/{self.user_name}.ecprv] ", icon='warning')
+            tk.messagebox.showwarning("File Sudah Ada", f"Kunci sudah ada di  [keys/{self.user_name}-{self.port}.ecprv] ", icon='warning')
         else:
-            tk.messagebox.showinfo("Pengunduhan Sukses", f"Kunci berhasil disimpan di [keys/{self.user_name}.ecprv]")
+            tk.messagebox.showinfo("Pengunduhan Sukses", f"Kunci berhasil disimpan di [keys/{self.user_name}-{self.port}.ecprv]")
 
     def download_ds_public_key(self):
         try:
-            with open(f"keys/{self.user_name}.scpub", "x") as f:
+            with open(f"keys/{self.user_name}-{self.port}.scpub", "x") as f:
                 f.write(f"{self.user_name}::{self.port}::{self.ds_public_key}")
         except FileExistsError:
-            tk.messagebox.showwarning("File Sudah Ada", f"Kunci sudah ada di  [keys/{self.user_name}.scpub] ", icon='warning')
+            tk.messagebox.showwarning("File Sudah Ada", f"Kunci sudah ada di  [keys/{self.user_name}-{self.port}.scpub] ", icon='warning')
         else:
-            tk.messagebox.showinfo("Pengunduhan Sukses", f"Kunci berhasil disimpan di [keys/{self.user_name}.scpub]")
+            tk.messagebox.showinfo("Pengunduhan Sukses", f"Kunci berhasil disimpan di [keys/{self.user_name}-{self.port}.scpub]")
 
     def download_ds_private_key(self):
         try:
-            with open(f"keys/{self.user_name}.scprv", "x") as f:
+            with open(f"keys/{self.user_name}-{self.port}.scprv", "x") as f:
                 f.write(f"{self.user_name}::{self.port}::{self.ds_private_key}")
         except FileExistsError:
-            tk.messagebox.showwarning("File Sudah Ada", f"Kunci sudah ada di  [keys/{self.user_name}.scprv] ", icon='warning')
+            tk.messagebox.showwarning("File Sudah Ada", f"Kunci sudah ada di  [keys/{self.user_name}-{self.port}.scprv] ", icon='warning')
         else:
-            tk.messagebox.showinfo("Pengunduhan Sukses", f"Kunci berhasil disimpan di [keys/{self.user_name}.scprv]")
+            tk.messagebox.showinfo("Pengunduhan Sukses", f"Kunci berhasil disimpan di [keys/{self.user_name}-{self.port}.scprv]")
 
 class Client(tk.Tk):
     def __init__(self,server_port:int):
@@ -350,10 +350,10 @@ class ChatPage(tk.Frame):
     
     def receive_message_handler(self,encrypted_message:str):
         print("MEssage",encrypted_message)
-        if encrypted_message['message'] in ['Connection Established','Message sent','Failed to send message'] or encrypted_message['message'].startswith("Failed to send message:"):
-            return
+        # if encrypted_message['message'] in ['Connection Established','Message sent','Failed to send message'] or encrypted_message['message'].startswith("Failed to send message:"):
+        #     return
         # decrypt_data
-        message = E2EE.decrypt(encrypted_message['message'],self.private_key)
+        message = E2EE.decrypt(encrypted_message,self.private_key)
         print("dec message",message)
         # Tampilin di layar
         self.chat_display.tag_configure('tag-them', justify=tk.RIGHT)
@@ -382,7 +382,7 @@ class ChatPage(tk.Frame):
         tmp = private_key.split("::")
         if len(tmp)<3:
             raise ValueError("Invalid private key format")
-        self.private_key = tmp[1]
+        self.private_key = int(tmp[2])
 
     def send_message(self):
         if self.port:

@@ -46,8 +46,8 @@ async def messaging(ws:WebSocket):
     manager.connect(ws,key)
     # Konfirmasi handshake
     print("kirim")
-    await manager.send_message(ws.client.port,"Connection Established")
-    print("1")
+    # await manager.send_message(ws.client.port,"Connection Established")
+    print("Connection Established")
   except WebSocketDisconnect:
     logger.info(f"Client {ws} disconnected")
 
@@ -80,15 +80,15 @@ async def messaging(ws:WebSocket):
       
       is_success = await manager.send_message(message['dst_port'],encrypted_message)
       if is_success:
-        await ws.send_text("Message sent")
+        print("Message sent")
       else:
-        await ws.send_text("Failed to send message")
+        print("Failed to send message")
     except WebSocketDisconnect:
       logger.info(f"Client {ws} disconnected")
       break
     except json.JSONDecodeError:
       logger.error("Invalid JSON format")
-      await ws.send_text(f"Failed to send message: {encrypted_message}")
+      print(f"Failed to send message: {encrypted_message}")
 
 @app.get("/digital-signature-param")
 # buat dapatin global variabel digital signature
