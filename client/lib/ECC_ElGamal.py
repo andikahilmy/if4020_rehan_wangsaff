@@ -49,13 +49,7 @@ def encrypt(plaintext:bytes,public_key:Point):
   return (c1,c2)
 
 def decrypt(c1:Point,c2:Point,private_key:int):
-  print(c1)
-  print(c2)
-  print("key",private_key)
   P_M =  c2 + c1*(SECP256R1.n - private_key)
-  print("P_M")
-  print(decode_point(P_M))
-  print("AA")
   return decode_point(P_M)
 
 

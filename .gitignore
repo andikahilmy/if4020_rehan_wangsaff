@@ -1,5 +1,5 @@
 */__pycache__/
 client/db/*
-keys/
+keys/*
 .venv/
 .vscode/

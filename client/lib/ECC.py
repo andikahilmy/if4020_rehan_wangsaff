@@ -12,7 +12,6 @@ class Point:
 
     @staticmethod
     def from_string(s:str,curve:Type['ElipticCurve'])->Type['Point']:
-        print("s",s)
         try:
             x,y = s[1:-1].split(',')
         except ValueError:

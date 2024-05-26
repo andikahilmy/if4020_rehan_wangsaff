@@ -57,9 +57,7 @@ async def messaging(ws:WebSocket):
 
     manager.connect(ws,key)
     # manager.connect(ws,"")
-    print("shared key",key)
     # Konfirmasi handshake
-    print("kirim")
     # await manager.send_message(ws.client.port,"Connection Established")
     print("Connection Established")
   except WebSocketDisconnect:
@@ -76,18 +74,12 @@ async def messaging(ws:WebSocket):
       # decrypt data
       sender_shared_key = manager.CONNECTIONS[ws.client.port][1]
       cipher = Cipher(sender_shared_key,'ctr')
-      print("recv data",data)
-      print("KEYS",cipher.key)
-      print("decrypted 1",cipher.decrypt(data))
-      print("decrypted 2",cipher.decrypt(data))
       decrypted_data = cipher.decrypt(data).decode()
-      print("decryp recv data s",decrypted_data)
       del cipher
 
       # Parse ke json
       # decrypted_data = data
       message = json.loads(decrypted_data)
-      print("msg",message)
       # Format pesan
       #{
       #  "src_port": "int",
@@ -99,7 +91,6 @@ async def messaging(ws:WebSocket):
       receiver_shared_key = manager.CONNECTIONS[message['dst_port']][1]
       cipher = Cipher(receiver_shared_key,'ctr')
       encrypted_message = base64.b64encode(cipher.encrypt(json.dumps(message).encode())).decode()
-      print("enc msg",encrypted_message)
       del cipher 
       # encrypted_message = json.dumps(message)
       is_success = await manager.send_message(message['dst_port'],encrypted_message)
