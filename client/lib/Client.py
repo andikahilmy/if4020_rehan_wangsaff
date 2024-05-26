@@ -382,7 +382,7 @@ class ChatPage(tk.Frame):
         tmp = private_key.split("::")
         if len(tmp)<3:
             raise ValueError("Invalid private key format")
-        self.private_key = tmp[1]
+        self.private_key = int(tmp[2])
 
     def send_message(self):
         if self.port:
