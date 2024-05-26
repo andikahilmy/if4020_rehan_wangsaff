@@ -271,7 +271,7 @@ class StartPage(tk.Frame):
         if not file_path:
             return
         with open(file_path, "r") as f:
-            self.public_entry.delete(0, tk.END)
+            self.private_entry.delete(0, tk.END)
             self.private_entry.insert(0, f.read())
 
 class ChatPage(tk.Frame):
