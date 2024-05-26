@@ -76,6 +76,8 @@ async def messaging(ws:WebSocket):
       cipher = Cipher(sender_shared_key,'ctr')
       print("recv data",data)
       print("KEYS",cipher.key)
+      print("decrypted 1",cipher.decrypt(data))
+      print("decrypted 2",cipher.decrypt(data))
       decrypted_data = cipher.decrypt(data).decode()
       print("decryp recv data s",decrypted_data)
       del cipher

@@ -31,17 +31,18 @@ class ALS():
     self.connected_event.set()
     # Buat task untuk kirim pesan
     # asyncio.create_task(self._send())
+    # Handshake
+    await self.handshake()
     # Buat thread untuk mengirim pesan
     self.receive_task = asyncio.create_task(self._receive())
     asyncio.create_task(self._send())
-    # Handshake
-    await self.handshake()
     print("kena")
 
   async def _receive(self)->None:
     #TODO handle penerimaan pesan
     while True:
       try:
+        print("terima")
         message = await self.websocket.recv()
         print("Receive",message)
         self.process_message(message)
@@ -86,18 +87,23 @@ class ALS():
     return None
 
   def process_message(self,message:str)->None:
+    print("masuk ke process")
     encoded_data = message
     #Parse json
     if encoded_data=='Connection Established':
       self.on_message_received(encoded_data)
       return
     try:
-      data = base64.b64decode(encoded_data).decode()
+      print('ke try')
+      print(base64.b64decode(encoded_data))
+      print("asss")
+      print(base64.b64decode(encoded_data))
+      data = base64.b64decode(encoded_data)
       print("datum",data)
-      message_from_json = json.loads(data)['message']
-      decrypted_message = self.__cipher.decrypt(message_from_json)
+      decrypted_message = self.__cipher.decrypt(data)
+      message_from_json = json.loads(decrypted_message)['message']
       # decrypted_message = message_from_json
-      print("Decrypted message:",decrypted_message)
+      print("Decrypted message:",message_from_json)
     except json.JSONDecodeError:
       print("Failed to parse JSON")
       print("Data:",data)
@@ -105,7 +111,7 @@ class ALS():
     except KeyError:
       print("Invalid JSON format")
       return
-    self.on_message_received(decrypted_message)
+    self.on_message_received(message_from_json)
 
   async def close_connection(self)->None:
     # Tutup koneksi
